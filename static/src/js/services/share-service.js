@@ -64,7 +64,7 @@ export const buildWhatsAppShareUrl = (linkUrl, payment) => {
   const amt = formatAmountDisplay(payment.amount);
   const zweck = payment.reference || payment.purpose || 'Überweisung';
   const msg =
-    `Hallo! Hier ist der Überweisungslink über ${amt} an ${payment.recipientName} (${zweck}) – einfach antippen für QR-Code & vorausgefüllte Überweisung:\n${linkUrl}`;
+    `Hallo! Hier ist der Überweisungslink über ${amt} an ${payment.recipientName} (${zweck}). Einfach Link öffnen & den QR-Code an „George“ oder deine Banking-App schicken – alles ist vorausgefüllt:\n${linkUrl}`;
   return `https://wa.me/?text=${encodeURIComponent(msg)}`;
 };
 

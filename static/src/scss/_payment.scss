@@ -104,6 +104,40 @@
   @include focus-ring;
 }
 
+.sepa-payment-guide {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--ui-radius-card);
+  border: 1px solid color-mix(in oklab, var(--ui-accent) 28%, var(--ui-border));
+  background: var(--ui-accent-soft);
+}
+
+.sepa-payment-guide__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ui-accent-text);
+}
+
+.sepa-payment-guide__steps {
+  margin: 6px 0 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.38;
+  color: var(--ui-text);
+}
+
+.sepa-payment-guide__desktop {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+
 .sepa-payment-feedback {
   margin: 0 0 12px;
   font-size: 13px;

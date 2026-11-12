@@ -174,7 +174,11 @@ export const mountLandingView = (root, state) => {
   so.id = 'so-funktionierts';
   so.appendChild(el('h2', 'sepa-section__title', { text: "So geht's" }));
   const steps = el('ol', 'sepa-step-list');
-  ['IBAN einmal eintragen', 'Betrag tippen', 'Link per WhatsApp schicken'].forEach((t) => {
+  [
+    'IBAN einmal eintragen',
+    'Betrag tippen & Link per WhatsApp schicken',
+    'Empfänger schickt den QR-Code einfach an „George“ oder seine Bank-App – alles vorausgefüllt',
+  ].forEach((t) => {
     steps.appendChild(el('li', '', { text: t }));
   });
   so.appendChild(steps);
