@@ -59,6 +59,71 @@ const savePayer = (payment, id) => localStorage.setItem(payerStorageKey(payment)
 
 const bankTitle = (id) => BANK_OPTIONS.find((o) => o.id === id)?.title || id;
 
+export const payerGuideFor = (selected) => {
+  switch (selected) {
+    case 'george_at':
+      return {
+        title: 'Einfach den QR-Code an „George“ schicken:',
+        steps: [
+          'Unten tippen & im Menü „George“ auswählen',
+          'Überweisung ist fertig vorausgefüllt – nur noch freigeben',
+        ],
+        cta: 'QR-Code an „George“ schicken',
+        secondary: 'Oder QR-Bild speichern (für Scan & Pay)',
+      };
+    case 'elba_at':
+      return {
+        title: 'Einfach den QR-Code an „Mein ELBA“ schicken:',
+        steps: [
+          'Unten tippen & „Mein ELBA“ wählen (oder Bild speichern → QR-Scan)',
+          'Überweisung ist fertig vorausgefüllt – nur noch freigeben',
+        ],
+        cta: 'QR-Code an „Mein ELBA“ schicken',
+        secondary: 'Oder QR-Bild speichern',
+      };
+    case 'bankaustria_at':
+      return {
+        title: 'Einfach den QR-Code an deine Bank-App schicken:',
+        steps: [
+          'Unten tippen & deine Banking-App im Menü auswählen',
+          'Überweisung ist fertig vorausgefüllt – nur noch freigeben',
+        ],
+        cta: 'QR-Code an Bank-App schicken',
+        secondary: 'Oder QR-Bild speichern',
+      };
+    case 'sparkasse_de':
+      return {
+        title: 'Einfach an die App „Sparkasse“ schicken:',
+        steps: [
+          'Unten tippen & im Teilen-Menü „Sparkasse“ auswählen',
+          'Alle Felder werden automatisch vorausgefüllt – nur noch freigeben',
+        ],
+        cta: 'An „Sparkasse“ schicken',
+        secondary: 'Als QR-Bild schicken',
+      };
+    case 'vr_de':
+      return {
+        title: 'Einfach an deine Banking-App schicken:',
+        steps: [
+          'Unten tippen & deine Banking-App (VR, DKB, ING …) auswählen',
+          'Alle Felder werden automatisch vorausgefüllt – nur noch freigeben',
+        ],
+        cta: 'An Banking-App schicken',
+        secondary: 'Als QR-Bild schicken',
+      };
+    default:
+      return {
+        title: 'Direkt in deiner Banking-App öffnen:',
+        steps: [
+          'Unten tippen – öffnet Outbank, Banking4 oder MoneyMoney',
+          'Alternativ unten QR-Code scannen oder Felder kopieren',
+        ],
+        cta: 'In Banking-App öffnen (payto://)',
+        secondary: 'Alternativ bank:// öffnen',
+      };
+  }
+};
+
 export const mountPaymentView = async (root, state) => {
   const payment = state.payment;
   if (!payment) {
@@ -81,6 +146,7 @@ export const mountPaymentView = async (root, state) => {
   const bankHost = el('div', 'sepa-payment-banks');
   bankHost.setAttribute('aria-label', 'Deine Bank-App wählen');
   const payerBar = el('div', 'sepa-payment-payer-bar');
+  const guideBox = el('aside', 'sepa-payment-guide', { 'aria-label': 'Kurzanleitung' });
   const actionHost = el('div', 'sepa-payment-actions');
   const shareFeedback = el('div', 'sepa-payment-feedback sepa-payment-feedback--empty', {
     role: 'status',
@@ -143,8 +209,26 @@ export const mountPaymentView = async (root, state) => {
     payerBar.append(label, sep, change);
   };
 
+  const renderGuide = (guide) => {
+    guideBox.replaceChildren();
+    const title = el('p', 'sepa-payment-guide__title');
+    title.append(icon('share2', { size: 15 }), document.createTextNode(` ${guide.title}`));
+    const list = el('ol', 'sepa-payment-guide__steps');
+    guide.steps.forEach((s) => list.appendChild(el('li', 'sepa-payment-guide__step', { text: s })));
+    guideBox.append(title, list);
+    if (isDesktopNonTouch()) {
+      guideBox.appendChild(
+        el('p', 'sepa-payment-guide__desktop', {
+          text: 'Am PC? Einfach den QR-Code unten mit deiner Banking-App am Handy scannen.',
+        })
+      );
+    }
+  };
+
   const renderFlow = () => {
+    const guide = payerGuideFor(selected);
     renderPayerBar();
+    renderGuide(guide);
     actionHost.replaceChildren();
     const atQr = selected === 'george_at' || selected === 'elba_at' || selected === 'bankaustria_at';
     const deSparkasse = selected === 'sparkasse_de' || selected === 'vr_de';
@@ -152,12 +236,12 @@ export const mountPaymentView = async (root, state) => {
 
     if (atQr) {
       actionHost.appendChild(
-        PrimaryAction('QR teilen', {
+        PrimaryAction(guide.cta, {
           onClick: () => runShare(shareSlipImage, { copyIbanOnShared: true }),
         })
       );
       actionHost.appendChild(
-        QuietAction('QR-Bild speichern', {
+        QuietAction(guide.secondary, {
           onClick: async () => {
             try {
               const blob = await generateSlipPngBlob(payment);
@@ -166,7 +250,7 @@ export const mountPaymentView = async (root, state) => {
               a.click();
               URL.revokeObjectURL(url);
               setShareFeedback(
-                'Zahlschein heruntergeladen – in deiner Banking-App unter Foto-/QR-Überweisung öffnen.'
+                'Zahlschein gespeichert – jetzt in deiner Banking-App unter QR-/Foto-Scan auswählen.'
               );
             } catch {
               setShareFeedback('Teilen fehlgeschlagen – bitte QR-Code oder Felder unten nutzen.', true);
@@ -178,21 +262,21 @@ export const mountPaymentView = async (root, state) => {
     }
     if (deSparkasse) {
       actionHost.appendChild(
-        PrimaryAction('PDF an die Bank-App', { onClick: () => runShare(shareSlipPdf) })
+        PrimaryAction(guide.cta, { onClick: () => runShare(shareSlipPdf) })
       );
       actionHost.appendChild(
-        QuietAction('QR-Bild teilen', { onClick: () => runShare(shareSlipImage) })
+        QuietAction(guide.secondary, { onClick: () => runShare(shareSlipImage) })
       );
       return;
     }
     if (multi) {
       const payto = el('a', 'kit-primary-action kit-primary-action--link', {
         href: payment.paytoUri,
-        text: 'payto:// öffnen',
+        text: guide.cta,
       });
       const bank = el('a', 'kit-quiet-action kit-quiet-action--link', {
         href: payment.bankUri,
-        text: 'bank:// öffnen',
+        text: guide.secondary,
       });
       bindMultiBankHint(payto);
       bindMultiBankHint(bank);
@@ -264,7 +348,16 @@ export const mountPaymentView = async (root, state) => {
   if (isDesktopNonTouch()) qrDetails.open = true;
   qrDetails.append(el('summary', 'sepa-faq-item__q', { text: 'QR-Code' }), qrHost);
 
-  const bodyBlocks = [summary, payerBar, actionHost, shareFeedback, bankDetails, qrDetails, copyDetails];
+  const bodyBlocks = [
+    summary,
+    payerBar,
+    guideBox,
+    actionHost,
+    shareFeedback,
+    bankDetails,
+    qrDetails,
+    copyDetails,
+  ];
   if (isInAppBrowser()) {
     bodyBlocks.splice(
       1,

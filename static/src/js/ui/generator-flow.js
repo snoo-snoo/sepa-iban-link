@@ -461,7 +461,11 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     qrCard.appendChild(qrHost);
     if (previewPayment?.epcPayload) renderEpcQr(qrHost, previewPayment.epcPayload);
 
-    content.append(summary, qrCard);
+    const recipientHint = el('p', 'kit-inline-hint', {
+      text: 'Empfänger öffnet den Link & schickt den QR-Code einfach an „George“ oder seine Bank-App.',
+    });
+
+    content.append(summary, qrCard, recipientHint);
 
     const footer = el('div', 'kit-footer-stack');
     const wa = el('a', 'kit-primary-action kit-primary-action--link', {
