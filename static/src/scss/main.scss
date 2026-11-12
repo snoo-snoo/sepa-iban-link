@@ -1,0 +1,143 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'generator';
+@use 'payment';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: $font;
+  color: $color-text;
+  background: $color-bg;
+  line-height: 1.45;
+}
+
+.sepa-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.sepa-card {
+  background: $color-surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  padding: 1.25rem;
+}
+
+.sepa-card__title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+}
+
+.sepa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 10px;
+  border: 0;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  @include focus-ring;
+
+  &--primary {
+    background: $color-primary;
+    color: #fff;
+
+    &:hover {
+      background: $color-primary-hover;
+    }
+  }
+
+  &--secondary {
+    background: #e2e8f0;
+    color: $color-text;
+  }
+
+  &--ghost {
+    background: transparent;
+    border: 1px solid $color-border;
+    color: $color-text;
+  }
+
+  &--copied {
+    background: $color-ok;
+    color: #fff;
+  }
+}
+
+.sepa-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.sepa-badge {
+  display: inline-block;
+  margin: 0.25rem 0.5rem 0.25rem 0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #e2e8f0;
+
+  &--ok {
+    background: rgba($color-ok, 0.15);
+    color: $color-ok;
+  }
+
+  &--warn {
+    background: rgba($color-danger, 0.12);
+    color: $color-danger;
+  }
+
+  &--signed {
+    background: rgba($color-ok, 0.15);
+    color: $color-ok;
+  }
+
+  &--bank {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+}
+
+.sepa-alert {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: $color-danger;
+  margin-top: 0.75rem;
+
+  &--error {
+    border: 1px solid #fecaca;
+  }
+}
+
+.sepa-qr {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+
+  canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+}
+
+.sepa-qr--hero canvas {
+  width: min(320px, 100%);
+}
