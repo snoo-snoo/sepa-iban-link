@@ -61,6 +61,16 @@ final class AppController
             return;
         }
 
+        if ($isRead && $path === '/impressum') {
+            $this->renderLegalPage('impressum');
+            return;
+        }
+
+        if ($isRead && ($path === '/datenschutz' || $path === '/datenschutzerklaerung')) {
+            $this->renderLegalPage('datenschutz');
+            return;
+        }
+
         if ($isRead && ($path === '/' || $path === '')) {
             $this->renderGeneratorPage();
             return;
@@ -116,6 +126,15 @@ final class AppController
     {
         $state = $this->buildInitialState('generator');
         $this->renderLayout($state, 'SEPA-Überweisungslink – DSGVO-konform & ohne Server-Speicher', null);
+    }
+
+    private function renderLegalPage(string $legalPage): void
+    {
+        $title = $legalPage === 'impressum'
+            ? 'Impressum & Offenlegung'
+            : 'Datenschutzerklärung';
+        $state = $this->buildInitialState($legalPage);
+        $this->renderLayout($state, $title, null);
     }
 
     private function renderPaymentPage(string $token): void
@@ -229,6 +248,7 @@ final class AppController
         $metaDescription = $ogDescription;
 
         $assets = $this->resolveViteAssets();
+        $basePrefix = $this->basePathPrefix();
         $viewsDir = dirname(__DIR__, 2) . '/views';
         /** @var array<string, mixed> $state layout variable */
 

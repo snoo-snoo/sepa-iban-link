@@ -373,7 +373,12 @@ export const mountPaymentView = async (root, state) => {
     history.replaceState(null, '', '/');
     window.dispatchEvent(new HashChangeEvent('hashchange'));
   });
-  footer.appendChild(own);
+  const legalNav = el('nav', 'sepa-legal-footer-nav', { 'aria-label': 'Rechtliches' });
+  legalNav.append(
+    el('a', 'sepa-legal-footer-nav__link', { href: '/impressum', text: 'Impressum' }),
+    el('a', 'sepa-legal-footer-nav__link', { href: '/datenschutz', text: 'Datenschutzerklärung' })
+  );
+  footer.append(own, legalNav);
 
   const screen = MobileScreen({
     titleId,
