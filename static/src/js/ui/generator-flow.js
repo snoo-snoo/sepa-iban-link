@@ -1,4 +1,4 @@
-import { formatIban, lookupRecipientBank, maskIban, normalizeIban, validateIban } from '../domain/iban.js';
+import { formatIban, lookupRecipientBank, normalizeIban, validateIban } from '../domain/iban.js';
 import {
   buildEpcPayload,
   encodePaymentToken,
@@ -12,13 +12,11 @@ import { flashCopied, renderEpcQr } from './components.js';
 import { icon } from './icons.js';
 import {
   BackButton,
-  ChecklistRow,
   MobileScreen,
   PhoneFrame,
   PrimaryAction,
   ProgressBar,
   QuietAction,
-  SharedList,
   StepTransition,
   el,
   tapHaptic,
@@ -138,37 +136,19 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
 
   const renderPrivacy = (titleId) => {
     const content = el('div', 'kit-flow-block');
-    content.appendChild(el('p', 'kit-eyebrow', { text: 'DSGVO · PRIVACY BY DESIGN' }));
-    const h = el('h2', 'kit-heading', { text: 'Deine IBAN bleibt auf deinem Gerät.' });
+    const h = el('h1', 'kit-heading', { text: 'Überweisungslink erstellen' });
     h.id = titleId;
     content.appendChild(h);
     content.appendChild(
-      el('p', 'kit-lead', {
-        text: 'Einmal lokal hinterlegen – danach tippst du für jede Zahlung nur noch den Betrag ein.',
-      })
+      el('p', 'kit-lead', { text: 'IBAN einmal speichern. Danach nur den Betrag.' })
     );
-    content.appendChild(
-      SharedList({
-        positive: {
-          title: 'Lokal auf deinem Gerät',
-          items: [
-            'Name & IBAN nur im lokalen Browser-Speicher',
-            'Link als #-Fragment (für den Webserver unsichtbar)',
-            'Jederzeit mit einem Tipp restlos löschbar',
-          ],
-        },
-        negative: {
-          title: 'Niemals auf unserem Server',
-          items: ['Keine Datenbank & keine Kontodaten-Logs', 'Kein Account, keine Cookies, kein Tracking'],
-        },
-      })
-    );
+    const security = el('p', 'kit-security-line');
+    security.append(icon('lock', { size: 14 }), document.createTextNode(' Bleibt auf diesem Gerät'));
+    content.appendChild(security);
     const footer = el('div', 'kit-footer-stack');
+    footer.appendChild(PrimaryAction('Jetzt starten', { onClick: () => setStep('iban') }));
     footer.appendChild(
-      PrimaryAction('Jetzt IBAN lokal hinterlegen', { onClick: () => setStep('iban') })
-    );
-    footer.appendChild(
-      QuietAction('Mit Beispiel-IBAN ausprobieren', {
+      QuietAction('Beispiel ansehen', {
         onClick: () => {
           saveProfile(DEMO_AT);
           syncProfile();
@@ -178,11 +158,6 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     );
     return MobileScreen({
       titleId,
-      header: [
-        el('span', 'kit-header-spacer'),
-        ProgressBar({ value: 0.5, label: 'Schritt 1 von 2' }),
-        el('span', 'kit-step-count', { text: '1/2' }),
-      ],
       children: StepTransition('privacy', content),
       footer,
       testId: 'step-privacy',
@@ -191,13 +166,10 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
 
   const renderIban = (titleId) => {
     const content = el('div', 'kit-flow-block');
-    content.appendChild(el('p', 'kit-eyebrow', { text: 'EINMALIGE EINRICHTUNG · 0 SERVER-BYTES' }));
-    const h = el('h2', 'kit-heading', { text: 'Empfänger & IBAN speichern' });
+    const h = el('h2', 'kit-heading', { text: 'Deine IBAN' });
     h.id = titleId;
     content.appendChild(h);
-    content.appendChild(
-      el('p', 'kit-lead', { text: 'Wird ausschließlich lokal in deinem Browser gespeichert.' })
-    );
+    content.appendChild(el('p', 'kit-lead', { text: 'Nur in diesem Browser. Jederzeit löschbar.' }));
 
     const nameInput = el('input', 'kit-input', {
       type: 'text',
@@ -231,26 +203,21 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
       bicInput
     );
 
-    const checklistHost = el('div', 'kit-checklist');
+    const status = el('p', 'kit-inline-hint');
 
     const refreshChecklist = () => {
-      checklistHost.replaceChildren();
       const nameOk = fields.name.trim().length > 0;
       const v = validateIban(fields.iban);
-      let ibanDetail = '';
-      if (v.valid) {
+      if (!fields.iban) status.textContent = nameOk ? 'Jetzt die IBAN eintragen.' : '';
+      else if (!v.valid) status.textContent = 'IBAN noch ungültig.';
+      else {
         const bank = lookupRecipientBank(fields.iban);
-        ibanDetail = bank ? `IBAN gültig · ${bank.country} · ${bank.bankName}` : 'IBAN gültig';
+        status.textContent = bank ? `IBAN gültig · ${bank.bankName}` : 'IBAN gültig';
       }
-      checklistHost.append(
-        ChecklistRow('Empfängername angegeben', nameOk ? 'done' : 'waiting'),
-        ChecklistRow('IBAN-Prüfsumme gültig (ISO 13616)', v.valid ? 'done' : 'waiting', ibanDetail),
-        ChecklistRow('Speicherort: 100 % lokal im Browser', 'done')
-      );
       return nameOk && v.valid;
     };
 
-    const saveBtn = PrimaryAction('Lokal speichern & weiter', {
+    const saveBtn = PrimaryAction('Speichern und Betrag eingeben', {
       disabled: true,
       onClick: () => {
         saveProfile({ name: fields.name.trim(), iban: fields.iban, bic: fields.bic });
@@ -296,7 +263,7 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
       ibanInput,
       pills,
       bicDetails,
-      checklistHost
+      status
     );
     updateSave();
 
@@ -304,7 +271,7 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
       titleId,
       header: [
         BackButton(() => setStep(loadProfile() ? 'amount' : 'privacy'), 'Zurück'),
-        ProgressBar({ value: 1, label: 'Schritt 2 von 2' }),
+        ProgressBar({ value: 1, label: 'Schritt 2 von 2', visibleLabel: false }),
         el('span', 'kit-step-count', { text: '2/2' }),
       ],
       children: StepTransition('iban', content),
@@ -322,7 +289,9 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
       const card = el('div', 'kit-local-account');
       const lock = icon('lock', { size: 16 });
       const name = el('span', 'kit-local-account__name', { text: profile.name });
-      const ibanMask = el('span', 'kit-local-account__iban', { text: maskIban(profile.iban) });
+      const compact = normalizeIban(profile.iban);
+      const shown = compact.length >= 8 ? `${compact.slice(0, 4)} ···· ${compact.slice(-4)}` : compact;
+      const ibanMask = el('span', 'kit-local-account__iban', { text: shown });
       const badge = el('span', 'kit-local-account__badge', { text: 'Lokal gespeichert' });
       card.append(lock, name, ibanMask, badge);
       const actions = el('div', 'kit-local-account__actions');
@@ -340,8 +309,7 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
       content.appendChild(card);
     }
 
-    content.appendChild(el('p', 'kit-eyebrow', { text: 'SCHRITT FÜR JEDE ZAHLUNG' }));
-    const h = el('h2', 'kit-heading', { text: 'Betrag eingeben. Fertig.' });
+    const h = el('h2', 'kit-heading', { text: 'Betrag' });
     h.id = titleId;
     content.appendChild(h);
 
@@ -379,7 +347,7 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     const purposeInput = el('input', 'kit-input', {
       type: 'text',
       maxlength: '140',
-      placeholder: 'Verwendungszweck (optional, z. B. Pizza, Geschenk)',
+      placeholder: 'Wofür? (optional)',
     });
     purposeInput.value = fields.purpose;
     purposeInput.addEventListener('input', () => {
@@ -403,14 +371,12 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     });
 
     const security = el('p', 'kit-security-line');
-    security.append(icon('lock', { size: 14 }), document.createTextNode(' Kein Server-Kontakt · Link wird lokal im Browser berechnet'));
-
-    content.append(amountWrap, chips, purposeInput, refDetails, security);
+    security.append(icon('lock', { size: 14 }), document.createTextNode(' Link entsteht nur hier'));
 
     const errBox = el('p', 'kit-inline-error');
     errBox.hidden = true;
 
-    const goReady = PrimaryAction('Überweisungslink generieren', {
+    const goReady = PrimaryAction('Link erstellen', {
       onClick: () => {
         syncProfile();
         fields.name = loadProfile()?.name || fields.name;
@@ -425,15 +391,12 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
         setStep('ready');
       },
     });
-    content.appendChild(errBox);
+    content.append(amountWrap, chips, errBox, goReady, purposeInput, refDetails, security);
 
     return MobileScreen({
       titleId,
-      header: profile
-        ? [el('span', 'kit-header-spacer'), ProgressBar({ value: 1, label: 'Bereit' }), el('span', 'kit-step-count', { text: '·' })]
-        : undefined,
+      header: undefined,
       children: StepTransition('amount', content),
-      footer: goReady,
       testId: 'step-amount',
     });
   };

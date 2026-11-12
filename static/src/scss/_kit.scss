@@ -261,10 +261,10 @@
 
 .kit-heading {
   margin: 0;
-  font-size: 26px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .kit-lead {
@@ -469,10 +469,12 @@
 }
 
 .kit-local-account__name {
+  grid-column: 2;
   font-weight: 600;
 }
 
 .kit-local-account__iban {
+  grid-column: 1 / -1;
   font-family: var(--ui-font-mono);
   font-size: 13px;
   color: var(--ui-text-muted);
@@ -852,4 +854,59 @@
   display: block;
   font-size: 12px;
   color: var(--ui-text-muted);
+}
+
+// Phones scroll the page. A nested overflow box with overscroll-behavior: contain
+// swallows the swipe and the rest of the page never moves.
+.kit-phone[data-frame='full'] {
+  .kit-phone__screen {
+    display: block;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .kit-mobile-screen {
+    min-height: 0;
+    background: transparent;
+  }
+
+  .kit-mobile-screen__header {
+    min-height: 40px;
+    padding-inline: 0;
+  }
+
+  .kit-mobile-screen__body {
+    flex: none;
+    overflow: visible;
+    overscroll-behavior: auto;
+    padding: 0 0 8px;
+  }
+
+  .kit-mobile-screen__footer:has(.kit-primary-action) {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    border-top: 0;
+    background: color-mix(in oklab, var(--ui-page) 92%, transparent);
+    backdrop-filter: blur(10px);
+    padding: 8px 0 max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+.kit-phone[data-frame='device'] {
+  .kit-mobile-screen {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .kit-mobile-screen__body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
 }

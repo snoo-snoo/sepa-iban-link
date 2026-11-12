@@ -7,3 +7,8 @@
 .kit-flow-block {
   padding-bottom: 8px;
 }
+
+.kit-flow-block > .kit-primary-action,
+.kit-flow-block > .kit-input {
+  margin-top: 16px;
+}
