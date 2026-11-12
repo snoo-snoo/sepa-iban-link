@@ -1,0 +1,118 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'kit';
+@use 'landing';
+@use 'generator';
+@use 'payment';
+
+:root {
+  --ui-accent: #0f766e;
+  --ui-radius-control: 10px;
+  --ui-radius-card: 14px;
+  --ui-radius-pill: 999px;
+  --ui-dur-fast: 120ms;
+  --ui-dur-exit: 150ms;
+  --ui-dur-enter: 220ms;
+  --ui-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ui-font: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --ui-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --ui-page: #fafafa;
+  --ui-surface: #ffffff;
+  --ui-subtle: #f4f4f5;
+  --ui-hover: #f4f4f5;
+  --ui-active: #e4e4e7;
+  --ui-border: #e4e4e7;
+  --ui-border-input: #8a8a93;
+  --ui-text: #18181b;
+  --ui-text-muted: #52525b;
+  --ui-text-subtle: #71717a;
+  --ui-accent-fg: #ffffff;
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 86%, black);
+  --ui-accent-soft: color-mix(in oklab, var(--ui-accent) 9%, var(--ui-surface));
+  --ui-accent-text: color-mix(in oklab, var(--ui-accent) 88%, black);
+  --ui-focus: var(--ui-accent);
+  --ui-danger: #dc2626;
+  --ui-danger-soft: #fef2f2;
+  --ui-success: #15803d;
+  --ui-success-soft: #f0fdf4;
+  --ui-shadow-float: 0 1px 2px rgb(24 24 27 / 0.06), 0 12px 32px -8px rgb(24 24 27 / 0.18);
+  --ui-shadow-raise: 0 1px 2px rgb(24 24 27 / 0.05);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ui-accent: #14b8a6;
+  --ui-page: #09090b;
+  --ui-surface: #131316;
+  --ui-subtle: #1c1c20;
+  --ui-hover: #1f1f23;
+  --ui-active: #2a2a2f;
+  --ui-border: #27272a;
+  --ui-border-input: #6e6e78;
+  --ui-text: #fafafa;
+  --ui-text-muted: #a1a1aa;
+  --ui-text-subtle: #8b8b94;
+  --ui-accent-fg: #ffffff;
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 84%, white);
+  --ui-accent-soft: color-mix(in oklab, var(--ui-accent) 18%, var(--ui-surface));
+  --ui-accent-text: color-mix(in oklab, var(--ui-accent) 42%, white);
+  --ui-focus: color-mix(in oklab, var(--ui-accent) 50%, white);
+  --ui-danger: #f87171;
+  --ui-danger-soft: #2a1414;
+  --ui-success: #4ade80;
+  --ui-success-soft: #0f2418;
+  --ui-shadow-float: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 40px -12px rgb(0 0 0 / 0.7);
+  --ui-shadow-raise: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --ui-accent: #14b8a6;
+    --ui-page: #09090b;
+    --ui-surface: #131316;
+    --ui-subtle: #1c1c20;
+    --ui-hover: #1f1f23;
+    --ui-active: #2a2a2f;
+    --ui-border: #27272a;
+    --ui-border-input: #6e6e78;
+    --ui-text: #fafafa;
+    --ui-text-muted: #a1a1aa;
+    --ui-text-subtle: #8b8b94;
+    --ui-accent-fg: #ffffff;
+    --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 84%, white);
+    --ui-accent-soft: color-mix(in oklab, var(--ui-accent) 18%, var(--ui-surface));
+    --ui-accent-text: color-mix(in oklab, var(--ui-accent) 42%, white);
+    --ui-focus: color-mix(in oklab, var(--ui-accent) 50%, white);
+    --ui-danger: #f87171;
+    --ui-danger-soft: #2a1414;
+    --ui-success: #4ade80;
+    --ui-success-soft: #0f2418;
+    --ui-shadow-float: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 40px -12px rgb(0 0 0 / 0.7);
+    --ui-shadow-raise: 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: $font;
+  color: var(--ui-text);
+  background: var(--ui-page);
+  line-height: 1.45;
+}
+
+a {
+  color: var(--ui-accent-text);
+}

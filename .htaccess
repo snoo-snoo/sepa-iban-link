@@ -1,0 +1,11 @@
+# Forward to public/ when the repo root is uploaded as the domain folder on ALL-INKL.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteRule ^(?:src|config|views|tests|static|vendor)/ - [F,L]
+    RewriteRule ^(?:composer\.(?:json|lock)|package(?:-lock)?\.json)$ - [F,L]
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
