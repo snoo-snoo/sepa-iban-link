@@ -52,6 +52,11 @@ describe('payment-view recipient guide UX', () => {
 
     const cta = root.querySelector('.sepa-payment-actions .kit-primary-action');
     expect(cta?.textContent).toBe('QR-Code an „George“ schicken');
+
+    const legalLinks = [...root.querySelectorAll('.sepa-legal-footer-nav__link')].map((a) =>
+      a.getAttribute('href')
+    );
+    expect(legalLinks).toEqual(['/impressum', '/datenschutz']);
   });
 
   it('updates guide and CTA dynamically when switching payer bank app', async () => {

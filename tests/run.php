@@ -470,5 +470,40 @@ test('AppController resolveViteAssets manifest', function (): void {
     assertTrue($assets['js'] !== null || $assets['css'] !== []);
 });
 
+test('AppController GET /impressum and /datenschutz routes', function (): void {
+    $autoload = dirname(__DIR__) . '/src/autoload.php';
+    $script = <<<PHP
+<?php
+declare(strict_types=1);
+require '{$autoload}';
+use SepaPay\\Config\\AppConfig;
+use SepaPay\\Http\\AppController;
+use SepaPay\\Security\\TokenCodec;
+\$config = new AppConfig(['hmacSecret' => '']);
+\$controller = new AppController(\$config, new TokenCodec(\$config));
+ob_start();
+\$controller->handle('GET', '/impressum');
+\$imp = ob_get_clean();
+ob_start();
+\$controller->handle('GET', '/datenschutz');
+\$ds = ob_get_clean();
+echo \$imp . "\\n===SPLIT===\\n" . \$ds;
+PHP;
+    $tmp = tempnam(sys_get_temp_dir(), 'sepa-test-');
+    file_put_contents($tmp, $script);
+    $out = (string) shell_exec('php ' . escapeshellarg($tmp));
+    unlink($tmp);
+    [$imp, $ds] = explode("\n===SPLIT===\n", $out, 2);
+    assertTrue(str_contains($imp, 'MPI GmbH'));
+    assertTrue(str_contains($imp, 'FN 563135s'));
+    assertTrue(str_contains($imp, 'ATU77218903'));
+    assertTrue(str_contains($imp, 'A-4160 Aigen-Schlägl'));
+    assertTrue(str_contains($imp, 'Michael Plöckinger'));
+    assertTrue(str_contains($ds, 'Datenschutzerklärung'));
+    assertTrue(str_contains($ds, 'ALL-INKL.COM'));
+    assertTrue(str_contains($ds, 'Österreichische Datenschutzbehörde'));
+    assertTrue(str_contains($ds, 'RFC 9110'));
+});
+
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed > 0 ? 1 : 0);
