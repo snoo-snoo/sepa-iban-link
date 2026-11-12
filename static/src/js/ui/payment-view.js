@@ -11,7 +11,6 @@ import {
   MobileScreen,
   PhoneFrame,
   PrimaryAction,
-  ProcessTimeline,
   QuietAction,
   el,
   mountOptionRadiogroup,
@@ -21,12 +20,12 @@ import { mountThemeToggle } from './theme.js';
 const PAYER_KEY = 'sepa_payer_bank';
 
 const BANK_OPTIONS = [
-  { id: 'george_at', title: 'George (Erste Bank / Sparkasse AT)', subtitle: 'Scan & Pay, QR-Zahlschein', iconName: 'building2' },
-  { id: 'elba_at', title: 'Mein ELBA (Raiffeisen AT)', subtitle: 'QR-Code / Zahlschein', iconName: 'building2' },
-  { id: 'sparkasse_de', title: 'App Sparkasse (DE)', subtitle: 'Foto-Scan & GiroCode', iconName: 'building2' },
-  { id: 'vr_de', title: 'VR Banking / DKB / ING / Commerzbank', subtitle: 'Foto-Scan', iconName: 'building2' },
-  { id: 'bankaustria_at', title: 'Bank Austria / BAWAG / Volksbank AT', subtitle: 'QR & EPC', iconName: 'building2' },
-  { id: 'multibanking', title: 'Outbank / Banking4 / MoneyMoney', subtitle: 'payto:// Deep-Link', iconName: 'externalLink' },
+  { id: 'george_at', title: 'George', subtitle: 'Erste / Sparkasse AT', iconName: 'building2' },
+  { id: 'elba_at', title: 'Mein ELBA', subtitle: 'Raiffeisen', iconName: 'building2' },
+  { id: 'sparkasse_de', title: 'Sparkasse', subtitle: 'Foto-Scan', iconName: 'building2' },
+  { id: 'vr_de', title: 'VR, DKB, ING', subtitle: 'Foto-Scan', iconName: 'building2' },
+  { id: 'bankaustria_at', title: 'Bank Austria, BAWAG', subtitle: 'QR', iconName: 'building2' },
+  { id: 'multibanking', title: 'Andere App', subtitle: 'payto://', iconName: 'externalLink' },
 ];
 
 const defaultPayerBank = (payment) => {
@@ -40,35 +39,6 @@ const defaultPayerBank = (payment) => {
 const loadPayer = (payment) => localStorage.getItem(PAYER_KEY) || defaultPayerBank(payment);
 const savePayer = (id) => localStorage.setItem(PAYER_KEY, id);
 
-const flowStepsFor = (selected) => {
-  if (selected === 'george_at') {
-    return [
-      { title: 'QR-Zahlschein teilen oder in Fotos sichern', icon: 'share2' },
-      { title: 'George: Scan & Pay → Bild wählen → mit George ID freigeben', icon: 'smartphone' },
-      { title: 'Empfänger und Betrag kurz prüfen, dann freigeben', icon: 'checkCircle2' },
-    ];
-  }
-  if (selected === 'elba_at') {
-    return [
-      { title: 'QR-Zahlschein teilen oder in Fotos sichern', icon: 'share2' },
-      { title: 'Mein ELBA: Neue Überweisung → QR scannen', icon: 'smartphone' },
-      { title: 'Daten prüfen und freigeben', icon: 'checkCircle2' },
-    ];
-  }
-  if (selected === 'sparkasse_de' || selected === 'vr_de' || selected === 'bankaustria_at') {
-    return [
-      { title: 'Zahlschein-PDF oder QR-Bild an Banking-App teilen', icon: 'share2' },
-      { title: 'Banking-App: Fotoüberweisung / QR-Code übernimmt alle Felder', icon: 'smartphone' },
-      { title: 'Betrag und Empfänger kurz prüfen und freigeben', icon: 'checkCircle2' },
-    ];
-  }
-  return [
-    { title: 'payto:// oder bank:// Link öffnen', icon: 'externalLink' },
-    { title: 'Banking-App übernimmt die Felder', icon: 'smartphone' },
-    { title: 'Freigabe in der App', icon: 'checkCircle2' },
-  ];
-};
-
 export const mountPaymentView = async (root, state) => {
   const payment = state.payment;
   if (!payment) {
@@ -81,7 +51,7 @@ export const mountPaymentView = async (root, state) => {
 
   const top = el('header', 'sepa-payment-top');
   const banner = el('p', 'sepa-payment-banner');
-  banner.append(icon('shieldCheck', { size: 16 }), document.createTextNode(' Geprüft im Browser · Keine Daten am Server gespeichert'));
+  banner.append(icon('shieldCheck', { size: 16 }), document.createTextNode(' Nichts am Server'));
   const theme = el('div', 'sepa-payment-top__theme');
   mountThemeToggle(theme, { compact: true });
   top.append(banner, theme);
@@ -89,11 +59,9 @@ export const mountPaymentView = async (root, state) => {
 
   let selected = loadPayer(payment);
   const bankHost = el('div', 'sepa-payment-banks');
-  const timelineHost = el('div', 'sepa-payment-timeline');
   const actionHost = el('div', 'sepa-payment-actions');
 
   const renderFlow = () => {
-    timelineHost.replaceChildren(ProcessTimeline(flowStepsFor(selected)));
     actionHost.replaceChildren();
     const atGeorge = selected === 'george_at' || selected === 'elba_at';
     const deSparkasse = selected === 'sparkasse_de' || selected === 'vr_de' || selected === 'bankaustria_at';
@@ -101,7 +69,7 @@ export const mountPaymentView = async (root, state) => {
 
     if (atGeorge) {
       actionHost.appendChild(
-        PrimaryAction('QR-Zahlschein teilen / in Fotos sichern', {
+        PrimaryAction('QR teilen', {
           onClick: () => {
             shareSlipImage(payment).catch(() => {});
             copyText(payment.iban.replace(/\s/g, '')).catch(() => {});
@@ -122,8 +90,8 @@ export const mountPaymentView = async (root, state) => {
       return;
     }
     if (deSparkasse) {
-      actionHost.appendChild(PrimaryAction('Zahlschein-PDF in Banking-App teilen', { onClick: () => shareSlipPdf(payment) }));
-      actionHost.appendChild(QuietAction('Als QR-Bild teilen', { onClick: () => shareSlipImage(payment) }));
+      actionHost.appendChild(PrimaryAction('PDF an die Bank-App', { onClick: () => shareSlipPdf(payment) }));
+      actionHost.appendChild(QuietAction('QR-Bild teilen', { onClick: () => shareSlipImage(payment) }));
       return;
     }
     if (multi) {
@@ -148,7 +116,9 @@ export const mountPaymentView = async (root, state) => {
       text: payment.amount ? payment.amountFormatted : 'Betrag frei wählbar',
     })
   );
-  summary.appendChild(el('h1', 'sepa-payment-summary__name', { text: payment.recipientName }));
+  const name = el('h1', 'sepa-payment-summary__name', { text: payment.recipientName });
+  name.id = titleId;
+  summary.appendChild(name);
   summary.appendChild(el('p', 'sepa-payment-summary__iban', { text: payment.ibanFormatted }));
   if (payment.recipientBank) {
     summary.appendChild(
@@ -160,18 +130,12 @@ export const mountPaymentView = async (root, state) => {
   const purpose =
     payment.reference ? `Zahlungsreferenz: ${payment.reference}` : payment.purpose ? `Verwendungszweck: ${payment.purpose}` : '';
   if (purpose) summary.appendChild(el('p', 'sepa-payment-summary__purpose', { text: purpose }));
-  summary.appendChild(
-    el('p', 'sepa-payment-summary__hint', {
-      text: 'Bitte Empfänger und Betrag vor der Freigabe in deiner Banking-App kurz prüfen.',
-    })
-  );
 
   const qrHost = el('div', 'kit-qr-card');
   const qrInner = el('div', 'kit-qr-host');
   qrHost.appendChild(qrInner);
 
-  const copySection = el('section', 'sepa-payment-copy');
-  copySection.appendChild(el('h2', 'sepa-section__title', { text: 'Kopieren' }));
+  const copySection = el('div', 'sepa-payment-copy');
   const amountPreview = payment.amount ? payment.amountFormatted : 'Betrag frei wählbar';
   const purposePreview = payment.reference || payment.purpose || '—';
   const rows = [
@@ -189,29 +153,27 @@ export const mountPaymentView = async (root, state) => {
     copySection.appendChild(row);
   });
 
-  const bodyBlocks = [summary];
+  const bankDetails = el('details', 'sepa-fold-details');
+  bankDetails.append(el('summary', 'sepa-faq-item__q', { text: 'Andere Bank' }), bankHost);
+
+  const copyDetails = el('details', 'sepa-fold-details');
+  copyDetails.append(el('summary', 'sepa-faq-item__q', { text: 'Felder kopieren' }), copySection);
+
+  const qrDetails = el('details', 'sepa-fold-details');
+  if (isDesktopNonTouch()) qrDetails.open = true;
+  qrDetails.append(el('summary', 'sepa-faq-item__q', { text: 'QR-Code' }), qrHost);
+
+  const bodyBlocks = [summary, actionHost, bankDetails, qrDetails, copyDetails];
   if (isInAppBrowser()) {
-    bodyBlocks.push(
-      el('p', 'kit-inline-hint', {
-        text: 'Tipp: Falls Teilen blockiert wird, oben rechts „Im Browser öffnen“ (Safari/Chrome) wählen.',
-      })
+    bodyBlocks.splice(
+      1,
+      0,
+      el('p', 'kit-inline-hint', { text: 'Teilen blockiert? Oben rechts im Browser öffnen.' })
     );
   }
-  if (isDesktopNonTouch()) {
-    bodyBlocks.push(qrHost);
-  } else {
-    bodyBlocks.push(qrHost);
-  }
-  bodyBlocks.push(
-    el('h2', 'sepa-section__title', { text: 'Womit überweist du?' }),
-    bankHost,
-    timelineHost,
-    actionHost,
-    copySection
-  );
 
   const footer = el('div', 'sepa-payment-footer');
-  const own = el('a', 'kit-quiet-action kit-quiet-action--link', { href: '/', text: 'Eigenen privaten SEPA-Link erstellen' });
+  const own = el('a', 'kit-quiet-action kit-quiet-action--link', { href: '/', text: 'Eigenen Link erstellen' });
   own.addEventListener('click', (e) => {
     e.preventDefault();
     window.location.hash = '';

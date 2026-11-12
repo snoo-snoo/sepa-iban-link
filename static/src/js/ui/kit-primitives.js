@@ -45,7 +45,7 @@ export const BackButton = (onClick, label = 'Zurück') => {
   return btn;
 };
 
-export const ProgressBar = ({ value = 0, label = '' } = {}) => {
+export const ProgressBar = ({ value = 0, label = '', visibleLabel = true } = {}) => {
   const wrap = el('div', 'kit-progress');
   wrap.setAttribute('role', 'progressbar');
   wrap.setAttribute('aria-valuemin', '0');
@@ -57,7 +57,7 @@ export const ProgressBar = ({ value = 0, label = '' } = {}) => {
   fill.style.width = `${Math.min(100, Math.max(0, value * 100))}%`;
   track.appendChild(fill);
   wrap.appendChild(track);
-  if (label) {
+  if (label && visibleLabel) {
     const lbl = el('span', 'kit-progress__label', { text: label });
     wrap.appendChild(lbl);
   }

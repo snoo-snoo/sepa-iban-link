@@ -93,7 +93,7 @@
 }
 
 .sepa-hero {
-  padding: 16px;
+  padding: 8px 16px 16px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -221,7 +221,7 @@
 .sepa-section {
   max-width: 960px;
   margin: 0 auto;
-  padding: 32px 16px;
+  padding: 20px 16px;
 }
 
 .sepa-section__title {
@@ -232,6 +232,25 @@
 .sepa-section__lead {
   margin: 0;
   color: var(--ui-text-muted);
+}
+
+.sepa-section__lead--next {
+  margin-top: 8px;
+}
+
+.sepa-step-list {
+  margin: 8px 0 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 6px;
+}
+
+.sepa-fold-details {
+  margin-top: 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-card);
+  padding: 10px 12px;
+  background: var(--ui-surface);
 }
 
 .sepa-fragment-card {

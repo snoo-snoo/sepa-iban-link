@@ -1,12 +1,7 @@
 import { clear } from './components.js';
 import { icon } from './icons.js';
 import { FLOW_STEPS, mountGeneratorFlow } from './generator-flow.js';
-import {
-  PrivacyFounderNote,
-  ProcessTimeline,
-  SharedList,
-  el,
-} from './kit-primitives.js';
+import { el } from './kit-primitives.js';
 import { mountThemeToggle } from './theme.js';
 
 const TRUST_BADGES = [
@@ -42,15 +37,15 @@ const DE_BANKS = [
 const FAQ = [
   {
     q: 'Wer sieht meine IBAN?',
-    a: 'Nur dein Browser und die Person, der du den Link schickst. Unser Server lädt nur die statische App – das #-Fragment mit den Zahlungsdaten verlässt deinen Browser nicht in Richtung Server.',
+    a: 'Nur dieser Browser und wer den Link bekommt. Der Server sieht das #-Fragment nicht.',
   },
   {
-    q: 'Wo werden Kontodaten gespeichert?',
-    a: 'Optional einmalig in localStorage auf deinem Gerät. Keine Datenbank, keine Cookies, kein Tracking.',
+    q: 'Wo liegen die Daten?',
+    a: 'Optional lokal auf deinem Gerät. Keine Datenbank, keine Cookies.',
   },
   {
-    q: 'Kann ich gespeicherte Daten löschen?',
-    a: 'Ja – im Generator unter „Löschen“ oder durch Löschen der Website-Daten im Browser.',
+    q: 'Wie lösche ich sie?',
+    a: 'Im Generator auf „Löschen“ tippen.',
   },
 ];
 
@@ -105,26 +100,14 @@ export const mountLandingView = (root, state) => {
   page.appendChild(top);
 
   const hero = el('section', 'sepa-hero');
-  const heroMobile = el('div', 'sepa-hero-mobile');
-  heroMobile.appendChild(
-    el('p', 'sepa-hero-mobile__title', {
-      text: 'SEPA-Link für AT & DE · 100 % lokal, keine Server-Speicherung',
-    })
-  );
-  const mobilePills = el('div', 'sepa-hero-mobile__pills');
-  ['DSGVO', 'Nur lokal', '0 €'].forEach((t) => {
-    mobilePills.appendChild(el('span', 'sepa-hero-mobile__pill', { text: t }));
-  });
-  heroMobile.appendChild(mobilePills);
-
   const heroKit = el('div', 'sepa-hero-kit');
   const left = el('div', 'sepa-hero-desktop__copy');
   const eyebrow = el('p', 'sepa-hero-eyebrow', { text: '100 % LOKAL IM BROWSER · KEINE DATENBANK' });
-  const h1 = el('h1', 'sepa-hero-title', {
-    text: 'Überweisungslink per WhatsApp senden – vorausgefüllt für Banken in AT & DE.',
+  const h1 = el('p', 'sepa-hero-title', {
+    text: 'Überweisungslink per WhatsApp. Vorausgefüllt für Banken in AT und DE.',
   });
   const lead = el('p', 'sepa-hero-lead', {
-    text: 'Einmal deine IBAN lokal auf deinem Handy speichern. Danach nur noch Betrag eintippen, Link teilen – und beim Empfänger ist in George, Mein ELBA, Sparkasse & Co. alles fertig ausgefüllt. Ohne Server-Speicherung, ohne Account, ohne Gebühren.',
+    text: 'IBAN einmal lokal speichern, Betrag tippen, Link schicken. George, ELBA, Sparkasse. Nichts geht an den Server.',
   });
   left.append(eyebrow, h1, lead);
 
@@ -167,108 +150,45 @@ export const mountLandingView = (root, state) => {
   updateRail(rail, flowApi.getStep());
 
   heroKit.append(left, flowHost);
-  hero.append(heroMobile, heroKit);
-
+  hero.appendChild(heroKit);
   page.appendChild(hero);
+
+  const so = el('section', 'sepa-section');
+  so.id = 'so-funktionierts';
+  so.appendChild(el('h2', 'sepa-section__title', { text: "So geht's" }));
+  const steps = el('ol', 'sepa-step-list');
+  ['IBAN einmal eintragen', 'Betrag tippen', 'Link per WhatsApp schicken'].forEach((t) => {
+    steps.appendChild(el('li', '', { text: t }));
+  });
+  so.appendChild(steps);
 
   const sicher = el('section', 'sepa-section sepa-section--security');
   sicher.id = 'sicherheit';
-  sicher.appendChild(el('h2', 'sepa-section__title', { text: 'Sicherheit & DSGVO' }));
-
-  const matrix = SharedList({
-    positive: {
-      title: 'Was lokal in deinem Browser liegt (localStorage)',
-      items: [
-        'Empfängername & IBAN für schnelles Erstellen',
-        'Bevorzugte Banking-App (optional)',
-        'Jederzeit per Knopfdruck restlos löschbar',
-      ],
-    },
-    negative: {
-      title: 'Was unser Webserver niemals erhält',
-      items: [
-        'Keine IBANs, keine Beträge, keine Verwendungszwecke',
-        'Keine Datenbank, keine Cookies, keine Tracker',
-        'Keine IP-Profilbildung',
-      ],
-    },
+  sicher.appendChild(el('h2', 'sepa-section__title', { text: 'Datenschutz' }));
+  const points = el('ul', 'sepa-step-list');
+  ['Keine Speicherung am Server', 'Keine Cookies, kein Tracking', 'Löschen mit einem Tipp'].forEach((t) => {
+    points.appendChild(el('li', '', { text: t }));
   });
-  sicher.appendChild(matrix);
-
-  const fragment = el('article', 'sepa-fragment-card');
-  fragment.appendChild(el('h3', 'sepa-fragment-card__title', { text: 'Warum der Server technisch blind ist' }));
-  const urlLine = el('p', 'sepa-fragment-card__url');
-  urlLine.appendChild(document.createTextNode('https://sepa-link.at/ '));
-  urlLine.appendChild(el('span', 'sepa-fragment-card__quiet', { text: '(lädt nur die statische App)' }));
-  urlLine.appendChild(document.createTextNode(' + '));
-  urlLine.appendChild(el('span', 'sepa-fragment-card__hash', { text: '#p=eyJ2Ijox…' }));
-  urlLine.appendChild(
-    document.createTextNode(
-      ' (verbleibt zu 100 % im Browser & Messenger – wird laut HTTP-Standard niemals an den Server gesendet!)'
-    )
-  );
-  fragment.appendChild(urlLine);
-  const labels = el('div', 'sepa-security-labels');
-  ['Strikte Content-Security-Policy', 'Referrer-Policy: no-referrer', 'ISO 13616 & EPC069-12 Validierung', 'Selbst gehostet in der EU (kasserver.com)'].forEach(
-    (t) => {
-      const c = el('span', 'sepa-security-label');
-      c.append(icon('checkCircle2', { size: 14 }), document.createTextNode(t));
-      labels.appendChild(c);
-    }
-  );
-  fragment.appendChild(labels);
-  sicher.appendChild(fragment);
-
-  const timelineRow = el('div', 'sepa-timeline-row');
-  timelineRow.appendChild(
-    ProcessTimeline([
-      { title: 'Einmalig IBAN lokal hinterlegen', body: 'Nur auf deinem Gerät – kein Server-Kontakt.', icon: 'lock' },
-      { title: 'Betrag tippen & per WhatsApp teilen', body: 'Link mit #-Fragment – unsichtbar für den Webserver.', icon: 'share2' },
-      {
-        title: 'Empfänger öffnet Zahlschein in der Banking-App',
-        body: 'George, ELBA oder Sparkasse – alles vorausgefüllt.',
-        icon: 'smartphone',
-      },
-    ])
-  );
-  timelineRow.appendChild(
-    PrivacyFounderNote({
-      title: 'Unser Datenschutz-Versprechen',
-      body: 'Die sichersten Kontodaten sind die, die niemals auf einem fremden Server landen. Deshalb speichern wir nichts – und der HTTP-Standard hält dein #-Fragment ohnehin vom Server fern.',
-      signatureName: 'Team SEPA-Link',
+  sicher.appendChild(points);
+  const why = el('details', 'sepa-fold-details');
+  why.append(
+    el('summary', 'sepa-faq-item__q', { text: 'Warum der Server nichts sieht' }),
+    el('p', 'sepa-faq-item__a', {
+      text: 'Die Zahlungsdaten stecken hinter # im Link. Diesen Teil sendet der Browser nicht an den Server.',
     })
   );
-  const so = el('section', 'sepa-section');
-  so.id = 'so-funktionierts';
-  so.appendChild(el('h2', 'sepa-section__title', { text: "So funktioniert's – in 3 Sekunden" }));
-  so.appendChild(
-    el('p', 'sepa-section__lead', {
-      text: 'IBAN einmalig lokal eintragen. Danach nur noch Betrag eingeben, Link generieren – fertig.',
-    })
-  );
-  so.appendChild(timelineRow);
+  sicher.appendChild(why);
   page.append(so, sicher);
 
   const banken = el('section', 'sepa-section');
   banken.id = 'banken';
-  banken.appendChild(el('h2', 'sepa-section__title', { text: 'Unterstützte Banken' }));
-  const bankGrid = el('div', 'sepa-bank-grid');
-  const atCol = el('div', 'sepa-bank-col');
-  atCol.appendChild(el('h3', 'sepa-bank-col__title', { text: 'Österreich' }));
-  const atUl = el('ul', 'sepa-bank-col__list');
-  AT_BANKS.forEach((b) => atUl.appendChild(el('li', '', { text: b })));
-  atCol.appendChild(atUl);
-  const deCol = el('div', 'sepa-bank-col');
-  deCol.appendChild(el('h3', 'sepa-bank-col__title', { text: 'Deutschland' }));
-  const deUl = el('ul', 'sepa-bank-col__list');
-  DE_BANKS.forEach((b) => deUl.appendChild(el('li', '', { text: b })));
-  deCol.appendChild(deUl);
-  bankGrid.append(atCol, deCol);
-  banken.appendChild(bankGrid);
+  banken.appendChild(el('h2', 'sepa-section__title', { text: 'Banken' }));
+  banken.appendChild(el('p', 'sepa-section__lead', { text: `Österreich: ${AT_BANKS.join(', ')}` }));
+  banken.appendChild(el('p', 'sepa-section__lead sepa-section__lead--next', { text: `Deutschland: ${DE_BANKS.join(', ')}` }));
   page.appendChild(banken);
 
   const faqSec = el('section', 'sepa-section sepa-section--faq');
-  faqSec.appendChild(el('h2', 'sepa-section__title', { text: 'FAQ Sicherheit & DSGVO' }));
+  faqSec.appendChild(el('h2', 'sepa-section__title', { text: 'Kurz gefragt' }));
   FAQ.forEach((item) => {
     const d = el('details', 'sepa-faq-item');
     d.append(el('summary', 'sepa-faq-item__q', { text: item.q }), el('p', 'sepa-faq-item__a', { text: item.a }));
@@ -279,7 +199,7 @@ export const mountLandingView = (root, state) => {
   const foot = el('footer', 'sepa-landing-footer');
   foot.appendChild(
     el('p', '', {
-      text: 'Keine Cookies · Keine Server-Speicherung · Lokale Daten jederzeit löschbar',
+      text: 'Keine Cookies · nichts am Server',
     })
   );
   page.appendChild(foot);
