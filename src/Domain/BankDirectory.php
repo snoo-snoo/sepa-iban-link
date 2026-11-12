@@ -80,6 +80,10 @@ final class BankDirectory
             return $this->entry('AT', $blz, 'BTV', 'BTVAAT22XXX', 'btv_at');
         }
 
+        if ($blz === '19001') {
+            return $this->entry('AT', $blz, 'Trade Republic', 'TRBKATW2XXX', 'traderepublic_at');
+        }
+
         if (in_array($blz, ['19120', '99000', '19200', '76040'], true)) {
             return $this->entry('AT', $blz, 'bank99', 'SPBAATWWXXX', 'bank99_at');
         }

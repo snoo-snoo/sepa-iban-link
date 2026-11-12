@@ -82,6 +82,7 @@ const AT_BANKS = [
   { test: (blz) => blz.startsWith('12'), appKey: 'bankaustria_at', bankName: 'Bank Austria', defaultBic: 'BKAUATWW' },
   { test: (blz) => blz.startsWith('14'), appKey: 'bawag_at', bankName: 'BAWAG / easybank', defaultBic: 'BAWAATWW' },
   { test: (blz) => blz.startsWith('4'), appKey: 'bankaustria_at', bankName: 'Volksbank Österreich', defaultBic: 'VBOEATWW' },
+  { test: (blz) => blz === '19001', appKey: 'george_at', bankName: 'Trade Republic', defaultBic: 'TRBKATW2XXX' },
   { test: (blz) => blz === '19120' || blz === '76040', appKey: 'george_at', bankName: 'bank99', defaultBic: 'SPBAATWW' },
 ];
 
@@ -104,13 +105,13 @@ export const lookupRecipientBank = (iban) => {
 
   if (country === 'AT' && iban.length >= 9) {
     const blz = normalizeIban(iban).slice(4, 9);
-    const match = AT_BANKS.find((b) => b.test(blz)) ?? AT_BANKS[0];
+    const match = AT_BANKS.find((b) => b.test(blz));
     return {
       country: 'AT',
       bankCode: blz,
-      bankName: match.bankName,
-      defaultBic: match.defaultBic,
-      appKey: match.appKey,
+      bankName: match?.bankName ?? 'Bank in Österreich',
+      defaultBic: match?.defaultBic ?? '',
+      appKey: match?.appKey ?? 'george_at',
     };
   }
 

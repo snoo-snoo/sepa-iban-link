@@ -31,4 +31,12 @@ describe('local profile storage', () => {
     clearProfile();
     expect(localStorage.getItem(PROFILE_KEY)).toBe(null);
   });
+
+  it('returns null when stored iban fails validation', () => {
+    localStorage.setItem(
+      PROFILE_KEY,
+      JSON.stringify({ name: 'Anna', iban: 'AT483200000012345863', bic: '' })
+    );
+    expect(loadProfile()).toBe(null);
+  });
 });
