@@ -114,7 +114,7 @@
 }
 
 .kit-header-spacer {
-  width: 40px;
+  width: 44px;
 }
 
 .kit-step-count {
@@ -127,8 +127,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: var(--ui-radius-control);
   background: transparent;
@@ -153,7 +153,7 @@
 .kit-progress__fill {
   height: 100%;
   border-radius: inherit;
-  background: color-mix(in oklab, var(--ui-accent) 90%, white);
+  background: var(--ui-accent);
   transition: width var(--ui-dur-enter) var(--ui-ease-out);
 
   @include reduced-motion {
@@ -177,7 +177,7 @@
   min-height: 48px;
   border: 0;
   border-radius: var(--ui-radius-control);
-  background: color-mix(in oklab, var(--ui-accent) 90%, white);
+  background: var(--ui-accent);
   color: var(--ui-accent-fg);
   font: inherit;
   font-size: 16px;
@@ -186,12 +186,19 @@
   cursor: pointer;
   transition: transform var(--ui-dur-fast) var(--ui-ease-out), background var(--ui-dur-fast);
 
+  &:hover:not(:disabled) {
+    background: var(--ui-accent-hover);
+  }
+
   &:active:not(:disabled) {
     transform: scale(0.98);
   }
 
   &:disabled {
-    opacity: 0.45;
+    background: var(--ui-subtle);
+    color: var(--ui-text-subtle);
+    border: 1px solid var(--ui-border);
+    opacity: 1;
     pointer-events: none;
   }
 
@@ -291,6 +298,10 @@
   color: var(--ui-text);
   font: inherit;
   font-size: 16px;
+  position: relative;
+  z-index: 1;
+  scroll-margin-top: 72px;
+  scroll-margin-bottom: 96px;
 
   @include focus-ring;
 }
@@ -308,6 +319,8 @@
   cursor: pointer;
   font-size: 13px;
   color: var(--ui-text-muted);
+
+  @include focus-ring;
 }
 
 .kit-pill-row,
@@ -320,9 +333,13 @@
 
 .kit-pill,
 .kit-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-pill);
-  padding: 6px 12px;
+  padding: 8px 14px;
   background: var(--ui-surface);
   font: inherit;
   font-size: 13px;
@@ -494,10 +511,16 @@
 .kit-local-account__actions {
   grid-column: 1 / -1;
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 2px;
 }
 
 .kit-text-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 8px;
   border: 0;
   background: none;
   font: inherit;
@@ -761,8 +784,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-control);
   background: var(--ui-surface);
@@ -799,6 +822,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
+  min-height: 44px;
   border: 0;
   border-radius: var(--ui-radius-control);
   padding: 8px 10px;

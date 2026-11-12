@@ -64,13 +64,20 @@ export const ProgressBar = ({ value = 0, label = '', visibleLabel = true } = {})
   return wrap;
 };
 
-const isDeviceFrame = () => window.matchMedia('(min-width: 768px)').matches;
+const FRAME_QUERY = '(min-width: 1024px)';
 
 export const PhoneFrame = (childFactory) => {
   const root = el('div', 'kit-phone');
+  const media = window.matchMedia(FRAME_QUERY);
+  let mode = null;
   const render = () => {
-    const device = isDeviceFrame();
-    root.dataset.frame = device ? 'device' : 'full';
+    const device = media.matches;
+    const next = device ? 'device' : 'full';
+    // The iOS keyboard fires window resize. Rebuilding the frame on that
+    // event detaches the focused input and closes the keyboard.
+    if (next === mode && root.firstChild) return;
+    mode = next;
+    root.dataset.frame = next;
     root.replaceChildren();
     if (!device) {
       const inner = el('div', 'kit-phone__screen kit-phone__screen--native');
@@ -94,9 +101,8 @@ export const PhoneFrame = (childFactory) => {
     root.appendChild(bezel);
   };
   render();
-  const onResize = () => render();
-  window.addEventListener('resize', onResize);
-  root.cleanup = () => window.removeEventListener('resize', onResize);
+  media.addEventListener?.('change', render);
+  root.cleanup = () => media.removeEventListener?.('change', render);
   return root;
 };
 
@@ -164,8 +170,14 @@ export const OptionCard = ({
   return card;
 };
 
-export const mountOptionRadiogroup = (host, options, selected, onChange) => {
+export const mountOptionRadiogroup = (host, options, selected, onChange, { ariaLabel } = {}) => {
   host.setAttribute('role', 'radiogroup');
+  if (
+    ariaLabel ||
+    (!host.hasAttribute('aria-label') && !host.hasAttribute('aria-labelledby'))
+  ) {
+    host.setAttribute('aria-label', ariaLabel || 'Auswahl');
+  }
   const render = () => {
     host.replaceChildren();
     options.forEach((opt) => {
