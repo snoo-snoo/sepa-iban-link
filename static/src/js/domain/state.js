@@ -81,13 +81,22 @@ export const loadInitialState = () => {
     payment: null,
   };
 
-  const fromHash = paymentFromHash();
-  if (fromHash) {
+  const hash = window.location.hash || '';
+  if (hash.startsWith('#p=')) {
+    const fromHash = paymentFromHash();
+    if (fromHash) {
+      return {
+        ...base,
+        mode: 'payment',
+        payment: fromHash,
+        error: null,
+      };
+    }
     return {
       ...base,
-      mode: 'payment',
-      payment: fromHash,
-      error: null,
+      mode: 'generator',
+      payment: null,
+      error: 'Dieser Zahlungslink ist ungültig oder unvollständig.',
     };
   }
 

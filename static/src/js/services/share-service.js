@@ -32,11 +32,16 @@ const downloadBlob = (blob, filename) => {
 
 const shareFile = async (file, title) => {
   if (await canShareFiles()) {
-    await navigator.share({ files: [file], title });
-    return true;
+    try {
+      await navigator.share({ files: [file], title });
+      return 'shared';
+    } catch (err) {
+      if (err?.name === 'AbortError') return 'cancelled';
+      throw err;
+    }
   }
   downloadBlob(file, file.name);
-  return false;
+  return 'downloaded';
 };
 
 export const shareSlipImage = async (payment) => {

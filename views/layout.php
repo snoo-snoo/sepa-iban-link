@@ -21,7 +21,8 @@ $payment = $state['payment'] ?? null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0f766e">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafafa">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b">
     <title><?= htmlspecialchars($fullTitle, ENT_QUOTES, 'UTF-8') ?></title>
     <meta name="description" content="<?= htmlspecialchars($metaDescription, ENT_QUOTES, 'UTF-8') ?>">
     <meta property="og:type" content="website">
@@ -83,7 +84,9 @@ $payment = $state['payment'] ?? null;
         </article>
 <?php elseif ($mode === 'payment' && ($state['error'] ?? null) !== null): ?>
         <article class="sepa-fallback">
+            <h1>Ungültiger Zahlungslink</h1>
             <p class="error"><?= htmlspecialchars((string) $state['error'], ENT_QUOTES, 'UTF-8') ?></p>
+            <p><a href="/">Eigenen SEPA-Link erstellen</a></p>
         </article>
 <?php else: ?>
         <article class="sepa-fallback">
