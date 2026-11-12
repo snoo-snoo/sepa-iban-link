@@ -1,0 +1,30 @@
+{
+    "name": "snoo-snoo/sepa-iban-link",
+    "description": "SEPA IBAN payment link generator (AT/DE) with EPC QR and payto URIs",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.3",
+        "ext-mbstring": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "SepaPay\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SepaPay\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "php tests/run.php"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

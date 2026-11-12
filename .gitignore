@@ -1,0 +1,7 @@
+/vendor/
+/node_modules/
+/public/assets/
+/config/config.local.php
+/.phpunit.result.cache
+/dist-kasserver/
+.DS_Store
