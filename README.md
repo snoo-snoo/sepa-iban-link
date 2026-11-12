@@ -1,15 +1,26 @@
 # SEPA-Überweisungslink (AT · DE)
 
-Web-App zum Erstellen geteilbarer SEPA-Überweisungslinks mit EPC069-12-QR (GiroCode), `payto://`- und `bank://`-URIs sowie Zahlschein-Bild/PDF für George Scan & Pay, Mein ELBA, Sparkassen-Fotoüberweisung und VR-Banking.
+DSGVO-konforme Web-App zum Erstellen geteilbarer SEPA-Überweisungslinks mit **100 % Zero-Data-Storage**: Zahlungsdaten werden ausschließlich im Browser (`localStorage` + URL-Fragment) verarbeitet — der Server speichert und akzeptiert keine IBANs per POST.
+
+## Zero-Data-Storage & DSGVO-Architektur
+
+- **Kein Server-Speicher**: `POST /api/encode` antwortet mit **410 Gone** — nachweislich keine serverseitige Kodierung oder Persistenz.
+- **`#p=…` nach RFC 9110**: Das Fragment (`#p=<token>`) wird beim HTTP-Request **nicht** an den Server gesendet; Links bleiben Ende-zu-Ende im Browser.
+- **Lokales Onboarding**: IBAN einmalig im `localStorage` hinterlegen → Betrag & Verwendungszweck wählen → teilbarer Link mit `#p=…`.
+- **Legacy-Lesezugriff** (nur GET): `/p/{token}` und `/og/{token}.(png|svg)` für bestehende Server-Links; HTML mit `Cache-Control: no-store, no-cache, must-revalidate, private`.
+- **Sichere Labels** in der UI: klare Hinweise zu lokaler Verarbeitung, DSGVO-Konformität und Zero-Bytes-Server-Speicherung.
+- **WhatsApp / OpenGraph**: Beim Teilen von `https://domain/#p=…` crawlt WhatsApp nur `GET /` (ohne Fragment) — **Standard-Vorschaubild** unter `/og/default.png` bzw. `.svg` mit DSGVO-Botschaft (keine Zahlungsdaten).
+
+### HTTP-Security-Header (jede Antwort)
+
+`X-Content-Type-Options`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, `Cross-Origin-Opener-Policy`, restriktive `Permissions-Policy`, CSP mit `form-action 'none'` und `frame-ancestors 'none'`.
 
 ## Funktionen
 
 - **Österreich & Deutschland**: IBAN-Prüfung, Bank-Erkennung (George, Mein ELBA, Bank Austria, BAWAG, Sparkasse DE, VR, ING, DKB, N26, …)
 - **George Scan & Pay / Mein ELBA**: Zahlschein als Bild oder PDF teilen, QR in der Banking-App importieren
 - **EPC069-12** (11 Zeilen, 331-Byte-Limit), **RFC 8905** `payto://` mit `instruction=` / `message=`
-- **WhatsApp-Vorschau**: OpenGraph-Titel, Beschreibung und 1200×630 PNG/SVG-Vorschaubild auf `/p/…` (Server-Link)
-- **Privat-Modus**: Hash-Token `#p=…` nur im Browser — ohne Server-Preview, ideal für sensible Daten
-- **Optionale HMAC-Signatur** (`config/config.local.php` → `hmacSecret`) für verifizierte Links
+- **Optionale HMAC-Signatur** (`config/config.local.php` → `hmacSecret`) für verifizierte Legacy-Tokens
 
 ## Lokale Entwicklung
 
@@ -55,12 +66,13 @@ KAS **Zielverzeichnis**: `…/public/` (nicht das Repo-Root).
 | `composer test` / `php tests/run.php` | PHP-Domänentests ohne PHPUnit-Laufzeit |
 | `npm run test:all` | Beides nacheinander |
 
-## API-Kurzüberblick
+## HTTP-Routen (Kurzüberblick)
 
 | Methode | Pfad | Beschreibung |
 |---------|------|--------------|
-| `GET` | `/` | Generator |
-| `GET` | `/p/{token}` | Zahlungsseite |
-| `POST` | `/api/encode` | Token erzeugen (JSON) |
-| `GET` | `/og/{token}.png` | OpenGraph-Vorschaubild (PNG via GD, Fallback `.svg`) |
+| `GET` | `/` | Generator, lokales Onboarding, Hydration via `#p=…` |
+| `GET` | `/p/{token}` | Legacy-Zahlungsseite (nur Lesen) |
+| `POST` | `/api/encode` | **410 Gone** — Zero-Data-Storage (keine Kodierung am Server) |
+| `GET` | `/og/default.(png\|svg)` | DSGVO-Standard-OpenGraph-Karte (WhatsApp `GET /`) |
+| `GET` | `/og/{token}.(png\|svg)` | Legacy-Vorschaubild für `/p/…` |
 | `GET` | `/health` | Status JSON |

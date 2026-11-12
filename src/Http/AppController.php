@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SepaPay\Http;
 
-use InvalidArgumentException;
 use SepaPay\Config\AppConfig;
 use SepaPay\Domain\BankDirectory;
 use SepaPay\Domain\EpcQrPayload;
@@ -50,7 +49,10 @@ final class AppController
         }
 
         if ($method === 'POST' && $path === '/api/encode') {
-            $this->handleEncode();
+            $this->respondJson(410, [
+                'ok' => false,
+                'error' => 'Server-seitige Kodierung deaktiviert (100 % lokale Browser-Verarbeitung ohne Datenspeicherung).',
+            ]);
             return;
         }
 
@@ -113,7 +115,7 @@ final class AppController
     private function renderGeneratorPage(): void
     {
         $state = $this->buildInitialState('generator');
-        $this->renderLayout($state, 'Generator', null);
+        $this->renderLayout($state, 'SEPA-Überweisungslink – DSGVO-konform & ohne Server-Speicher', null);
     }
 
     private function renderPaymentPage(string $token): void
@@ -135,43 +137,23 @@ final class AppController
         }
     }
 
-    private function handleEncode(): void
+    private function handleOpenGraph(string $token, string $format = 'svg'): void
     {
-        $raw = file_get_contents('php://input');
-        if ($raw === false || $raw === '') {
-            $this->respondJson(422, ['ok' => false, 'error' => 'Leerer Request-Body.']);
+        if ($token === 'default') {
+            if ($format === 'png' && $this->ogRenderer->supportsPng()) {
+                $png = $this->ogRenderer->renderDefaultPng();
+                header('Content-Type: image/png');
+                header('Cache-Control: public, max-age=86400');
+                echo $png;
+                return;
+            }
+            $svg = $this->ogRenderer->renderDefault();
+            header('Content-Type: image/svg+xml; charset=UTF-8');
+            header('Cache-Control: public, max-age=86400');
+            echo $svg;
             return;
         }
 
-        try {
-            /** @var array<string, mixed> $body */
-            $body = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-            $payment = PaymentRequest::fromArray([
-                'name' => $body['name'] ?? '',
-                'iban' => $body['iban'] ?? '',
-                'bic' => $body['bic'] ?? '',
-                'amount' => $body['amount'] ?? '',
-                'purpose' => $body['purpose'] ?? '',
-                'reference' => $body['reference'] ?? '',
-            ]);
-            $token = $this->tokenCodec->encode($payment);
-            $url = $this->config->baseUrl . '/p/' . rawurlencode($token);
-
-            $this->respondJson(200, [
-                'ok' => true,
-                'token' => $token,
-                'url' => $url,
-                'payment' => $this->paymentPayload($payment, $token),
-            ]);
-        } catch (InvalidArgumentException $e) {
-            $this->respondJson(422, ['ok' => false, 'error' => $e->getMessage()]);
-        } catch (Throwable $e) {
-            $this->respondJson(422, ['ok' => false, 'error' => 'Validierung fehlgeschlagen.']);
-        }
-    }
-
-    private function handleOpenGraph(string $token, string $format = 'svg'): void
-    {
         try {
             $payment = $this->tokenCodec->decode($token);
             if ($format === 'png' && $this->ogRenderer->supportsPng()) {
@@ -226,18 +208,25 @@ final class AppController
             JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR,
         );
 
+        header('Cache-Control: no-store, no-cache, must-revalidate, private');
+
         $ogUrl = $this->config->baseUrl . ($_SERVER['REQUEST_URI'] ?? '/');
-        $ogImage = null;
-        $ogDescription = 'SEPA-Überweisung per Link, QR-Code oder Banking-App (Österreich & Deutschland).';
+        $ext = $this->ogRenderer->supportsPng() ? 'png' : 'svg';
 
         if ($payment !== null) {
             $ogDescription = $this->paymentOgDescription($payment);
+            $ogImage = isset($state['payment']['token'])
+                ? ($this->config->baseUrl !== '' ? $this->config->baseUrl : '')
+                    . '/og/' . rawurlencode((string) $state['payment']['token']) . '.' . $ext
+                : null;
+        } else {
+            $ogTitle = 'SEPA-Überweisungslink · Sicher & DSGVO-konform öffnen';
+            $ogDescription = 'Vorausgefüllte Überweisung für George, Mein ELBA, Sparkasse & VR Banking. '
+                . '100 % lokal im Browser – keine Datenspeicherung am Server.';
+            $ogImage = ($this->config->baseUrl !== '' ? $this->config->baseUrl : '') . '/og/default.' . $ext;
         }
 
-        if (isset($state['payment']['token'])) {
-            $ext = $this->ogRenderer->supportsPng() ? 'png' : 'svg';
-            $ogImage = $this->config->baseUrl . '/og/' . rawurlencode((string) $state['payment']['token']) . '.' . $ext;
-        }
+        $metaDescription = $ogDescription;
 
         $assets = $this->resolveViteAssets();
         $viewsDir = dirname(__DIR__, 2) . '/views';
@@ -305,9 +294,13 @@ final class AppController
         header('X-Content-Type-Options: nosniff');
         header('Referrer-Policy: no-referrer');
         header('X-Frame-Options: DENY');
+        header('Cross-Origin-Opener-Policy: same-origin');
+        header(
+            'Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+        );
         header(
             "Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-            . "img-src 'self' data: blob:; connect-src 'self';"
+            . "img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none';",
         );
     }
 

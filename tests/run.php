@@ -361,6 +361,89 @@ test('OpenGraphImageRenderer valid PNG when GD loaded', function (): void {
     assertTrue(strlen($png) > 500);
 });
 
+test('OpenGraphImageRenderer renderDefault SVG', function (): void {
+    $svg = (new OpenGraphImageRenderer())->renderDefault();
+    assertTrue(str_starts_with($svg, '<?xml'));
+    assertTrue(str_contains($svg, 'DSGVO-KONFORM'));
+    assertTrue(str_contains($svg, 'SEPA-Überweisungslink'));
+    assertTrue(str_contains($svg, '0 BYTES SERVER-SPEICHERUNG'));
+});
+
+test('OpenGraphImageRenderer renderDefaultPng when GD loaded', function (): void {
+    $renderer = new OpenGraphImageRenderer();
+    if (!$renderer->supportsPng()) {
+        return;
+    }
+    $png = $renderer->renderDefaultPng();
+    assertTrue(str_starts_with($png, "\x89PNG\r\n\x1a\n"));
+    assertTrue(strlen($png) > 500);
+});
+
+test('AppController POST /api/encode returns 410 Gone', function (): void {
+    $autoload = dirname(__DIR__) . '/src/autoload.php';
+    $script = <<<PHP
+<?php
+declare(strict_types=1);
+require '{$autoload}';
+use SepaPay\\Config\\AppConfig;
+use SepaPay\\Http\\AppController;
+use SepaPay\\Security\\TokenCodec;
+\$config = new AppConfig(['hmacSecret' => '']);
+\$controller = new AppController(\$config, new TokenCodec(\$config));
+ob_start();
+\$controller->handle('POST', '/api/encode');
+\$body = ob_get_clean();
+echo (string) http_response_code() . "\\n" . \$body;
+PHP;
+    $tmp = tempnam(sys_get_temp_dir(), 'sepa-test-');
+    file_put_contents($tmp, $script);
+    $raw = (string) shell_exec('php ' . escapeshellarg($tmp));
+    unlink($tmp);
+    [$statusLine, $body] = explode("\n", $raw, 2);
+    assertSame('410', $statusLine);
+    /** @var array<string, mixed> $json */
+    $json = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+    assertSame(false, $json['ok']);
+    assertTrue(str_contains((string) $json['error'], 'Server-seitige Kodierung deaktiviert'));
+});
+
+test('AppController GET /og/default.svg route', function (): void {
+    $autoload = dirname(__DIR__) . '/src/autoload.php';
+    $script = <<<PHP
+<?php
+declare(strict_types=1);
+require '{$autoload}';
+use SepaPay\\Config\\AppConfig;
+use SepaPay\\Http\\AppController;
+use SepaPay\\Security\\TokenCodec;
+\$config = new AppConfig(['hmacSecret' => '']);
+\$controller = new AppController(\$config, new TokenCodec(\$config));
+ob_start();
+\$controller->handle('GET', '/og/default.svg');
+echo ob_get_clean();
+PHP;
+    $tmp = tempnam(sys_get_temp_dir(), 'sepa-test-');
+    file_put_contents($tmp, $script);
+    $out = (string) shell_exec('php ' . escapeshellarg($tmp));
+    unlink($tmp);
+    assertTrue(str_starts_with($out, '<?xml'));
+    assertTrue(str_contains($out, 'DSGVO-KONFORM'));
+});
+
+test('AppController sendSecurityHeaders privacy posture', function (): void {
+    $ref = new ReflectionMethod(AppController::class, 'sendSecurityHeaders');
+    $lines = file($ref->getFileName());
+    assertTrue(is_array($lines));
+    $body = implode('', array_slice($lines, $ref->getStartLine() - 1, $ref->getEndLine() - $ref->getStartLine() + 1));
+    $bodyLower = strtolower($body);
+    assertTrue(str_contains($bodyLower, 'x-content-type-options: nosniff'));
+    assertTrue(str_contains($bodyLower, 'referrer-policy: no-referrer'));
+    assertTrue(str_contains($bodyLower, 'cross-origin-opener-policy: same-origin'));
+    assertTrue(str_contains($bodyLower, 'permissions-policy:'));
+    assertTrue(str_contains($bodyLower, "frame-ancestors 'none'"));
+    assertTrue(str_contains($bodyLower, "form-action 'none'"));
+});
+
 test('AppController buildInitialState generator', function (): void {
     $config = new AppConfig(['baseUrl' => 'https://example.test', 'hmacSecret' => '']);
     $controller = new AppController($config, new TokenCodec($config));

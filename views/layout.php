@@ -9,6 +9,7 @@ declare(strict_types=1);
 /** @var string $ogUrl */
 /** @var string|null $ogImage */
 /** @var string $ogDescription */
+/** @var string $metaDescription */
 /** @var array{css: list<string>, js: string|null} $assets */
 /** @var array<string, mixed> $state */
 
@@ -22,6 +23,7 @@ $payment = $state['payment'] ?? null;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0f766e">
     <title><?= htmlspecialchars($fullTitle, ENT_QUOTES, 'UTF-8') ?></title>
+    <meta name="description" content="<?= htmlspecialchars($metaDescription, ENT_QUOTES, 'UTF-8') ?>">
     <meta property="og:type" content="website">
     <meta property="og:title" content="<?= htmlspecialchars($ogTitle ?? $fullTitle, ENT_QUOTES, 'UTF-8') ?>">
     <meta property="og:description" content="<?= htmlspecialchars($ogDescription, ENT_QUOTES, 'UTF-8') ?>">
@@ -85,8 +87,12 @@ $payment = $state['payment'] ?? null;
         </article>
 <?php else: ?>
         <article class="sepa-fallback">
-            <h1><?= htmlspecialchars($appTitle, ENT_QUOTES, 'UTF-8') ?></h1>
-            <p>Erstelle einen SEPA-Überweisungslink für Österreich und Deutschland.</p>
+            <h1>SEPA-Überweisungslinks – 100&nbsp;% lokal &amp; DSGVO-konform</h1>
+            <ul>
+                <li>Keine Datenspeicherung am Server</li>
+                <li>IBAN bleibt lokal auf deinem Gerät</li>
+                <li>Kompatibel mit George, Mein ELBA, Sparkasse &amp; VR Banking</li>
+            </ul>
         </article>
 <?php endif; ?>
     </div>
