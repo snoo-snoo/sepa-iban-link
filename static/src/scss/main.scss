@@ -1,7 +1,103 @@
 @use 'variables' as *;
 @use 'mixins' as *;
+@use 'kit';
+@use 'landing';
 @use 'generator';
 @use 'payment';
+
+:root {
+  --ui-accent: #0f766e;
+  --ui-radius-control: 10px;
+  --ui-radius-card: 14px;
+  --ui-radius-pill: 999px;
+  --ui-dur-fast: 120ms;
+  --ui-dur-exit: 150ms;
+  --ui-dur-enter: 220ms;
+  --ui-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ui-font: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --ui-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --ui-page: #fafafa;
+  --ui-surface: #ffffff;
+  --ui-subtle: #f4f4f5;
+  --ui-hover: #f4f4f5;
+  --ui-active: #e4e4e7;
+  --ui-border: #e4e4e7;
+  --ui-border-input: #8a8a93;
+  --ui-text: #18181b;
+  --ui-text-muted: #52525b;
+  --ui-text-subtle: #71717a;
+  --ui-accent-fg: #ffffff;
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 86%, black);
+  --ui-accent-soft: color-mix(in oklab, var(--ui-accent) 9%, var(--ui-surface));
+  --ui-accent-text: color-mix(in oklab, var(--ui-accent) 88%, black);
+  --ui-focus: var(--ui-accent);
+  --ui-danger: #dc2626;
+  --ui-danger-soft: #fef2f2;
+  --ui-success: #15803d;
+  --ui-success-soft: #f0fdf4;
+  --ui-shadow-float: 0 1px 2px rgb(24 24 27 / 0.06), 0 12px 32px -8px rgb(24 24 27 / 0.18);
+  --ui-shadow-raise: 0 1px 2px rgb(24 24 27 / 0.05);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ui-accent: #14b8a6;
+  --ui-page: #09090b;
+  --ui-surface: #131316;
+  --ui-subtle: #1c1c20;
+  --ui-hover: #1f1f23;
+  --ui-active: #2a2a2f;
+  --ui-border: #27272a;
+  --ui-border-input: #6e6e78;
+  --ui-text: #fafafa;
+  --ui-text-muted: #a1a1aa;
+  --ui-text-subtle: #8b8b94;
+  --ui-accent-fg: #ffffff;
+  --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 84%, white);
+  --ui-accent-soft: color-mix(in oklab, var(--ui-accent) 18%, var(--ui-surface));
+  --ui-accent-text: color-mix(in oklab, var(--ui-accent) 42%, white);
+  --ui-focus: color-mix(in oklab, var(--ui-accent) 50%, white);
+  --ui-danger: #f87171;
+  --ui-danger-soft: #2a1414;
+  --ui-success: #4ade80;
+  --ui-success-soft: #0f2418;
+  --ui-shadow-float: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 40px -12px rgb(0 0 0 / 0.7);
+  --ui-shadow-raise: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --ui-accent: #14b8a6;
+    --ui-page: #09090b;
+    --ui-surface: #131316;
+    --ui-subtle: #1c1c20;
+    --ui-hover: #1f1f23;
+    --ui-active: #2a2a2f;
+    --ui-border: #27272a;
+    --ui-border-input: #6e6e78;
+    --ui-text: #fafafa;
+    --ui-text-muted: #a1a1aa;
+    --ui-text-subtle: #8b8b94;
+    --ui-accent-fg: #ffffff;
+    --ui-accent-hover: color-mix(in oklab, var(--ui-accent) 84%, white);
+    --ui-accent-soft: color-mix(in oklab, var(--ui-accent) 18%, var(--ui-surface));
+    --ui-accent-text: color-mix(in oklab, var(--ui-accent) 42%, white);
+    --ui-focus: color-mix(in oklab, var(--ui-accent) 50%, white);
+    --ui-danger: #f87171;
+    --ui-danger-soft: #2a1414;
+    --ui-success: #4ade80;
+    --ui-success-soft: #0f2418;
+    --ui-shadow-float: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 40px -12px rgb(0 0 0 / 0.7);
+    --ui-shadow-raise: 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+}
 
 *,
 *::before,
@@ -12,132 +108,11 @@
 body {
   margin: 0;
   font-family: $font;
-  color: $color-text;
-  background: $color-bg;
+  color: var(--ui-text);
+  background: var(--ui-page);
   line-height: 1.45;
 }
 
-.sepa-shell {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.sepa-card {
-  background: $color-surface;
-  border-radius: $radius;
-  box-shadow: $shadow;
-  padding: 1.25rem;
-}
-
-.sepa-card__title {
-  margin: 0 0 1rem;
-  font-size: 1.15rem;
-}
-
-.sepa-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  border-radius: 10px;
-  border: 0;
-  padding: 0.65rem 1rem;
-  font: inherit;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s ease;
-
-  @include focus-ring;
-
-  &--primary {
-    background: $color-primary;
-    color: #fff;
-
-    &:hover {
-      background: $color-primary-hover;
-    }
-  }
-
-  &--secondary {
-    background: #e2e8f0;
-    color: $color-text;
-  }
-
-  &--ghost {
-    background: transparent;
-    border: 1px solid $color-border;
-    color: $color-text;
-  }
-
-  &--copied {
-    background: $color-ok;
-    color: #fff;
-  }
-}
-
-.sepa-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.sepa-badge {
-  display: inline-block;
-  margin: 0.25rem 0.5rem 0.25rem 0;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: #e2e8f0;
-
-  &--ok {
-    background: rgba($color-ok, 0.15);
-    color: $color-ok;
-  }
-
-  &--warn {
-    background: rgba($color-danger, 0.12);
-    color: $color-danger;
-  }
-
-  &--signed {
-    background: rgba($color-ok, 0.15);
-    color: $color-ok;
-  }
-
-  &--bank {
-    background: #eff6ff;
-    color: #1d4ed8;
-  }
-}
-
-.sepa-alert {
-  padding: 0.75rem;
-  border-radius: 8px;
-  background: #fef2f2;
-  color: $color-danger;
-  margin-top: 0.75rem;
-
-  &--error {
-    border: 1px solid #fecaca;
-  }
-}
-
-.sepa-qr {
-  display: flex;
-  justify-content: center;
-  margin: 0.5rem 0;
-
-  canvas {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-  }
-}
-
-.sepa-qr--hero canvas {
-  width: min(320px, 100%);
+a {
+  color: var(--ui-accent-text);
 }

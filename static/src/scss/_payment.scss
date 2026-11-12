@@ -1,103 +1,100 @@
-@use 'variables' as *;
+@use 'mixins' as *;
 
-.sepa-payment__amount {
-  font-size: clamp(1.75rem, 5vw, 2.25rem);
-  font-weight: 700;
-  margin: 0 0 0.35rem;
+.sepa-payment-page {
+  min-height: 100vh;
+  padding: 12px 16px 32px;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-.sepa-payment__name {
-  margin: 0 0 0.5rem;
-  font-size: 1.25rem;
-}
-
-.sepa-payment__iban {
-  font-family: ui-monospace, monospace;
-  letter-spacing: 0.02em;
-  margin: 0 0 0.5rem;
-}
-
-.sepa-payment__purpose {
-  color: $color-muted;
-  margin: 0.5rem 0 0;
-}
-
-.sepa-payment__security {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: $color-muted;
-}
-
-.sepa-hint--inapp {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 8px;
-  padding: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.sepa-bank-list {
-  display: grid;
-  gap: 0.5rem;
-  margin: 0.75rem 0;
-}
-
-.sepa-bank {
-  text-align: left;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid $color-border;
-  border-radius: 8px;
-  background: $color-surface;
-  cursor: pointer;
-  font: inherit;
-
-  &--active {
-    border-color: $color-primary;
-    box-shadow: inset 0 0 0 1px $color-primary;
-  }
-}
-
-.sepa-flow {
+.sepa-payment-top {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 0.75rem 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.sepa-steps {
-  margin: 0.75rem 0 0;
-  padding-left: 1.25rem;
-  color: $color-muted;
-  font-size: 0.9rem;
+.sepa-payment-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ui-success);
 }
 
-.sepa-copy-row {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.65rem 0.75rem;
-  margin-bottom: 0.35rem;
-  border: 1px solid $color-border;
-  border-radius: 8px;
-  background: $color-surface;
-  cursor: pointer;
-  font: inherit;
+.sepa-payment-summary {
+  padding: 12px 0;
 }
 
-.sepa-footer {
-  margin: 1.5rem 0;
-  text-align: center;
+.sepa-payment-summary__amount {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.sepa-footer__link {
-  color: $color-primary;
+.sepa-payment-summary__name {
+  margin: 6px 0 0;
+  font-size: 20px;
+}
+
+.sepa-payment-summary__iban {
+  margin: 4px 0 0;
+  font-family: var(--ui-font-mono);
+  font-size: 14px;
+  color: var(--ui-text-muted);
+}
+
+.sepa-payment-summary__bank {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: var(--ui-radius-pill);
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent-text);
+  font-size: 12px;
   font-weight: 600;
 }
 
-.sepa-card--desktop-qr {
-  text-align: center;
+.sepa-payment-summary__purpose,
+.sepa-payment-summary__hint {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--ui-text-muted);
 }
 
-.sepa-card__lead {
-  color: $color-muted;
+.sepa-copy-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: var(--ui-surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  @include focus-ring;
+}
+
+.sepa-copy-row__label {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.sepa-copy-row__value {
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  text-align: right;
+}
+
+.sepa-payment-footer {
+  margin-top: 8px;
 }

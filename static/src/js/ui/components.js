@@ -38,6 +38,17 @@ export const bindCopyRow = (button, getText, onCopied) => {
 };
 
 export const flashCopied = (btn, label = 'Kopiert ✓') => {
+  const valNode = btn.querySelector?.('.sepa-copy-row__value');
+  if (valNode) {
+    const prev = valNode.textContent;
+    valNode.textContent = label;
+    btn.classList.add('sepa-btn--copied');
+    window.setTimeout(() => {
+      valNode.textContent = prev;
+      btn.classList.remove('sepa-btn--copied');
+    }, 2000);
+    return;
+  }
   const prev = btn.textContent;
   btn.textContent = label;
   btn.classList.add('sepa-btn--copied');

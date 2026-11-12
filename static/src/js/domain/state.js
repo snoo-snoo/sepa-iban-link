@@ -69,7 +69,7 @@ export const paymentFromHash = () => {
   const decoded = decodePaymentToken(token);
   const partial = tokenToPayment(decoded);
   if (!partial) return null;
-  return enrichPayment({ ...partial, verified: Boolean(decoded.s) }, token);
+  return enrichPayment({ ...partial, verified: false }, token);
 };
 
 export const loadInitialState = () => {
@@ -97,14 +97,4 @@ export const loadInitialState = () => {
   }
 
   return base;
-};
-
-export const encodeViaApi = async (baseUrl, fields) => {
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/api/encode`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(fields),
-  });
-  if (!res.ok) throw new Error('encode failed');
-  return res.json();
 };
