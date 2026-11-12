@@ -6,8 +6,8 @@ import { mountThemeToggle } from './theme.js';
 
 const TRUST_BADGES = [
   { icon: 'databaseOff', title: 'Keine Datenspeicherung', subtitle: '0 Bytes am Server' },
-  { icon: 'shieldCheck', title: 'DSGVO Art. 25', subtitle: 'Privacy by Design' },
-  { icon: 'eyeOff', title: 'RFC-9110 #-Schutz', subtitle: 'Server sieht keine IBAN' },
+  { icon: 'shieldCheck', title: 'DSGVO-konform', subtitle: 'Ohne Cookies & Tracking' },
+  { icon: 'eyeOff', title: '#-Link bleibt privat', subtitle: 'Server sieht keine IBAN' },
   { icon: 'qrCode', title: 'EPC069-12 Norm', subtitle: 'Offizieller Banken-QR AT/DE' },
 ];
 
@@ -17,6 +17,7 @@ const AT_BANKS = [
   'Bank Austria',
   'BAWAG / easybank',
   'Volksbank',
+  'Trade Republic',
   'bank99',
 ];
 
@@ -54,7 +55,8 @@ const updateRail = (rail, step) => {
   rail.querySelectorAll('.kit-rail__item').forEach((btn, i) => {
     const state = i < idx ? 'completed' : i === idx ? 'current' : 'upcoming';
     btn.dataset.state = state;
-    btn.setAttribute('aria-current', state === 'current' ? 'step' : 'false');
+    if (state === 'current') btn.setAttribute('aria-current', 'step');
+    else btn.removeAttribute('aria-current');
     const marker = btn.querySelector('.kit-rail__marker');
     if (!marker) return;
     marker.replaceChildren();
@@ -86,9 +88,9 @@ export const mountLandingView = (root, state) => {
 
   const nav = el('nav', 'sepa-topnav', { 'aria-label': 'Inhaltsnavigation' });
   [
-    ['#so-funktionierts', "So funktioniert's"],
-    ['#sicherheit', 'Sicherheit & DSGVO'],
-    ['#banken', 'Unterstützte Banken'],
+    ['#so-funktionierts', "So geht's"],
+    ['#sicherheit', 'Datenschutz'],
+    ['#banken', 'Banken'],
   ].forEach(([href, label]) => {
     nav.appendChild(el('a', 'sepa-topnav__link', { href, text: label }));
   });
@@ -100,16 +102,31 @@ export const mountLandingView = (root, state) => {
   page.appendChild(top);
 
   const hero = el('section', 'sepa-hero');
+  const errorText = typeof state?.error === 'string' ? state.error.trim() : '';
+  if (errorText) {
+    hero.appendChild(el('p', 'kit-inline-error', { role: 'alert', text: errorText }));
+  }
+
   const heroKit = el('div', 'sepa-hero-kit');
   const left = el('div', 'sepa-hero-desktop__copy');
-  const eyebrow = el('p', 'sepa-hero-eyebrow', { text: '100 % LOKAL IM BROWSER · KEINE DATENBANK' });
-  const h1 = el('p', 'sepa-hero-title', {
+
+  const heroHead = el('div', 'sepa-hero-head');
+  const h1 = el('h1', 'sepa-hero-title', {
     text: 'Überweisungslink per WhatsApp. Vorausgefüllt für Banken in AT und DE.',
   });
+  const mobileHero = el('div', 'sepa-hero-mobile');
+  const mobilePills = el('div', 'sepa-hero-mobile__pills');
+  ['100 % lokal', '0 €', 'AT & DE Banken'].forEach((label) => {
+    mobilePills.appendChild(el('span', 'sepa-hero-mobile__pill', { text: label }));
+  });
+  mobileHero.appendChild(mobilePills);
+  heroHead.append(h1, mobileHero);
+
+  const eyebrow = el('p', 'sepa-hero-eyebrow', { text: '100 % LOKAL IM BROWSER · KEINE DATENBANK' });
   const lead = el('p', 'sepa-hero-lead', {
     text: 'IBAN einmal lokal speichern, Betrag tippen, Link schicken. George, ELBA, Sparkasse. Nichts geht an den Server.',
   });
-  left.append(eyebrow, h1, lead);
+  left.append(heroHead, eyebrow, lead);
 
   const badgeGrid = el('div', 'sepa-trust-grid');
   TRUST_BADGES.forEach((b) => {
@@ -197,7 +214,16 @@ export const mountLandingView = (root, state) => {
   page.appendChild(faqSec);
 
   const foot = el('footer', 'sepa-landing-footer');
-  foot.appendChild(
+  const jumpNav = el('nav', 'sepa-jump-links', { 'aria-label': 'Schnellnavigation' });
+  [
+    ['#so-funktionierts', "So geht's"],
+    ['#sicherheit', 'Datenschutz'],
+    ['#banken', 'Banken'],
+  ].forEach(([href, label]) => {
+    jumpNav.appendChild(el('a', 'sepa-jump-links__link', { href, text: label }));
+  });
+  foot.append(
+    jumpNav,
     el('p', '', {
       text: 'Keine Cookies · nichts am Server',
     })

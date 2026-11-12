@@ -46,6 +46,12 @@ describe('iban', () => {
     expect(bank.appKey).toBe('ing_de');
   });
 
+  it('detects Trade Republic AT for BLZ 19001', () => {
+    const bank = lookupRecipientBank('AT441900103783600211');
+    expect(bank.bankName).toBe('Trade Republic');
+    expect(bank.defaultBic).toBe('TRBKATW2XXX');
+  });
+
   it('detects DKB DE by BLZ', () => {
     const bank = lookupRecipientBank('DE64120300000001234567');
     expect(bank.appKey).toBe('dkb_de');

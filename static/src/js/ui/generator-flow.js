@@ -48,6 +48,7 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
 
   let currentLink = '';
   let previewPayment = null;
+  let amountStepError = null;
 
   const syncProfile = () => {
     const p = loadProfile();
@@ -61,7 +62,6 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
 
   const setStep = (next) => {
     step = next;
-    onStepChange?.(step);
     render();
   };
 
@@ -136,7 +136,7 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
 
   const renderPrivacy = (titleId) => {
     const content = el('div', 'kit-flow-block');
-    const h = el('h1', 'kit-heading', { text: 'Überweisungslink erstellen' });
+    const h = el('h2', 'kit-heading', { text: 'Überweisungslink erstellen' });
     h.id = titleId;
     content.appendChild(h);
     content.appendChild(
@@ -172,13 +172,18 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     content.appendChild(el('p', 'kit-lead', { text: 'Nur in diesem Browser. Jederzeit löschbar.' }));
 
     const nameInput = el('input', 'kit-input', {
+      id: 'sepa-payee-name',
       type: 'text',
       maxlength: '70',
       placeholder: 'z. B. Max Mustermann',
-      autocomplete: 'name',
+      autocomplete: 'off',
+      autocapitalize: 'words',
+      enterkeyhint: 'next',
+      name: 'payee',
     });
     nameInput.value = fields.name;
     const ibanInput = el('input', 'kit-input kit-input--mono', {
+      id: 'sepa-payee-iban',
       type: 'text',
       inputmode: 'text',
       autocomplete: 'off',
@@ -188,18 +193,20 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     ibanInput.value = formatIban(fields.iban);
 
     const pills = el('div', 'kit-pill-row');
-    const pillAt = el('button', 'kit-pill', { type: 'button', text: 'Demo AT (George)' });
+    const pillAt = el('button', 'kit-pill', { type: 'button', text: 'Demo AT (Trade Republic)' });
     const pillDe = el('button', 'kit-pill', { type: 'button', text: 'Demo DE (Sparkasse)' });
     pills.append(pillAt, pillDe);
 
     const bicDetails = el('details', 'kit-details');
     const bicInput = el('input', 'kit-input kit-input--mono', {
+      id: 'sepa-payee-bic',
       placeholder: 'BIC (optional)',
       autocomplete: 'off',
     });
     bicInput.value = fields.bic;
     bicDetails.append(
       el('summary', 'kit-details__summary', { text: 'BIC (optional – in AT/DE automatisch)' }),
+      el('label', 'kit-label', { for: 'sepa-payee-bic', text: 'BIC' }),
       bicInput
     );
 
@@ -257,9 +264,9 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     });
 
     content.append(
-      el('label', 'kit-label', { text: 'Dein Name (Zahlungsempfänger)' }),
+      el('label', 'kit-label', { for: 'sepa-payee-name', text: 'Dein Name (Zahlungsempfänger)' }),
       nameInput,
-      el('label', 'kit-label', { text: 'Deine IBAN' }),
+      el('label', 'kit-label', { for: 'sepa-payee-iban', text: 'Deine IBAN' }),
       ibanInput,
       pills,
       bicDetails,
@@ -267,12 +274,18 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     );
     updateSave();
 
+    const editingProfile = Boolean(loadProfile());
+
     return MobileScreen({
       titleId,
       header: [
         BackButton(() => setStep(loadProfile() ? 'amount' : 'privacy'), 'Zurück'),
-        ProgressBar({ value: 1, label: 'Schritt 2 von 2', visibleLabel: false }),
-        el('span', 'kit-step-count', { text: '2/2' }),
+        ProgressBar({
+          value: editingProfile ? 1 : 0.5,
+          label: editingProfile ? 'IBAN' : 'Schritt 1 von 2',
+          visibleLabel: false,
+        }),
+        el('span', 'kit-step-count', { text: editingProfile ? 'IBAN' : '1/2' }),
       ],
       children: StepTransition('iban', content),
       footer: saveBtn,
@@ -290,8 +303,11 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
       const lock = icon('lock', { size: 16 });
       const name = el('span', 'kit-local-account__name', { text: profile.name });
       const compact = normalizeIban(profile.iban);
+      const bankMeta = lookupRecipientBank(compact);
       const shown = compact.length >= 8 ? `${compact.slice(0, 4)} ···· ${compact.slice(-4)}` : compact;
-      const ibanMask = el('span', 'kit-local-account__iban', { text: shown });
+      const ibanMask = el('span', 'kit-local-account__iban', {
+        text: bankMeta?.bankName ? `${shown} · ${bankMeta.bankName}` : shown,
+      });
       const badge = el('span', 'kit-local-account__badge', { text: 'Lokal gespeichert' });
       card.append(lock, name, ibanMask, badge);
       const actions = el('div', 'kit-local-account__actions');
@@ -315,10 +331,12 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
 
     const amountWrap = el('div', 'kit-amount-hero');
     const amountInput = el('input', 'kit-amount-input', {
+      id: 'sepa-amount',
       type: 'text',
       inputmode: 'decimal',
       placeholder: '0,00',
       autocomplete: 'off',
+      'aria-labelledby': titleId,
     });
     amountInput.value = fields.amount;
     const suffix = el('span', 'kit-amount-suffix', { text: '€' });
@@ -345,9 +363,11 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     });
 
     const purposeInput = el('input', 'kit-input', {
+      id: 'sepa-purpose',
       type: 'text',
       maxlength: '140',
       placeholder: 'Wofür? (optional)',
+      'aria-label': 'Verwendungszweck (optional)',
     });
     purposeInput.value = fields.purpose;
     purposeInput.addEventListener('input', () => {
@@ -356,12 +376,14 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
 
     const refDetails = el('details', 'kit-details');
     const refInput = el('input', 'kit-input kit-input--mono', {
+      id: 'sepa-reference',
       maxlength: '35',
       placeholder: 'RF…',
     });
     refInput.value = fields.reference;
     refDetails.append(
       el('summary', 'kit-details__summary', { text: 'Stattdessen Zahlungsreferenz (RF…) verwenden' }),
+      el('label', 'kit-label', { for: 'sepa-reference', text: 'Zahlungsreferenz (RF…)' }),
       refInput
     );
     refInput.addEventListener('input', () => {
@@ -373,8 +395,13 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
     const security = el('p', 'kit-security-line');
     security.append(icon('lock', { size: 14 }), document.createTextNode(' Link entsteht nur hier'));
 
-    const errBox = el('p', 'kit-inline-error');
+    const errBox = el('p', 'kit-inline-error', { role: 'alert', 'aria-live': 'polite' });
     errBox.hidden = true;
+    if (amountStepError) {
+      errBox.textContent = amountStepError;
+      errBox.hidden = false;
+      amountStepError = null;
+    }
 
     const goReady = PrimaryAction('Link erstellen', {
       onClick: () => {
@@ -391,18 +418,26 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
         setStep('ready');
       },
     });
-    content.append(amountWrap, chips, errBox, goReady, purposeInput, refDetails, security);
+    content.append(amountWrap, chips, purposeInput, refDetails, security, errBox);
 
     return MobileScreen({
       titleId,
       header: undefined,
       children: StepTransition('amount', content),
+      footer: goReady,
       testId: 'step-amount',
     });
   };
 
   const renderReady = (titleId) => {
-    if (!previewPayment) generateLink();
+    if (!previewPayment) {
+      const err = generateLink();
+      if (err || !previewPayment) {
+        amountStepError = err || 'Link konnte nicht erstellt werden.';
+        step = loadProfile() ? 'amount' : 'iban';
+        return loadProfile() ? renderAmount(titleId) : renderIban(titleId);
+      }
+    }
     const content = el('div', 'kit-flow-block kit-flow-block--ready');
 
     const summary = el('div', 'kit-ready-summary');
@@ -509,6 +544,13 @@ export const mountGeneratorFlow = (host, state, { onStepChange } = {}) => {
   };
 
   const render = () => {
+    if (step === 'ready' && !previewPayment) {
+      const err = generateLink();
+      if (err || !previewPayment) {
+        amountStepError = err || 'Link konnte nicht erstellt werden.';
+        step = loadProfile() ? 'amount' : 'iban';
+      }
+    }
     onStepChange?.(step);
     screenHost.replaceChildren(renderScreen());
     if (!frameRoot) {

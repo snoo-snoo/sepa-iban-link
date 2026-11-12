@@ -1,3 +1,5 @@
+import { validateIban } from './iban.js';
+
 export const PROFILE_KEY = 'sepa_saved_profile';
 
 export const loadProfile = () => {
@@ -9,6 +11,7 @@ export const loadProfile = () => {
     const name = String(data.name ?? '').trim();
     const iban = String(data.iban ?? '').replace(/\s/g, '').toUpperCase();
     if (!name || !iban) return null;
+    if (!validateIban(iban).valid) return null;
     return {
       name,
       iban,
@@ -33,13 +36,13 @@ export const saveProfile = (profile) => {
 export const clearProfile = () => localStorage.removeItem(PROFILE_KEY);
 
 export const DEMO_AT = {
-  name: 'Max Mustermann',
-  iban: 'AT232011100234573201',
+  name: 'Michael Plöckinger',
+  iban: 'AT441900103783600211',
   bic: '',
 };
 
 export const DEMO_DE = {
   name: 'Erika Musterfrau',
-  iban: 'DE89370400440532013000',
+  iban: 'DE54100500000011111111',
   bic: '',
 };

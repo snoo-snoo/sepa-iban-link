@@ -67,6 +67,62 @@
   color: var(--ui-text-muted);
 }
 
+.sepa-payment-payer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  min-height: 44px;
+  margin: 4px 0 10px;
+  padding: 4px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-control);
+  background: var(--ui-surface);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sepa-payment-payer-bar__change {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  margin: -4px -6px -4px auto;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--ui-radius-control);
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ui-accent-text);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  @include focus-ring;
+}
+
+.sepa-payment-feedback {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ui-text-muted);
+
+  &.kit-inline-error {
+    color: var(--ui-danger, #c62828);
+  }
+
+  &--empty {
+    display: none;
+  }
+}
+
+.sepa-payment-actions {
+  margin-bottom: 4px;
+}
+
 .sepa-copy-row {
   display: flex;
   justify-content: space-between;

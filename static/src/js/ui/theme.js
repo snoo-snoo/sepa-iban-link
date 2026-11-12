@@ -2,6 +2,26 @@ import { icon } from './icons.js';
 
 const STORAGE_KEY = 'sepa_theme';
 
+const THEME_COLOR_LIGHT = '#fafafa';
+const THEME_COLOR_DARK = '#09090b';
+
+const resolveEffectiveTheme = () => {
+  const attr = document.documentElement.getAttribute('data-theme');
+  if (attr === 'light' || attr === 'dark') return attr;
+  return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+};
+
+const syncThemeColorMeta = () => {
+  const color = resolveEffectiveTheme() === 'dark' ? THEME_COLOR_DARK : THEME_COLOR_LIGHT;
+  const metas = document.querySelectorAll?.('meta[name="theme-color"]');
+  if (!metas?.length) return;
+  metas.forEach((meta) => {
+    if (!meta.hasAttribute('media')) {
+      meta.setAttribute('content', color);
+    }
+  });
+};
+
 export const getStoredTheme = () => {
   const v = localStorage.getItem(STORAGE_KEY);
   if (v === 'light' || v === 'dark') return v;
@@ -17,11 +37,13 @@ export const applyTheme = (theme) => {
     root.removeAttribute('data-theme');
     localStorage.removeItem(STORAGE_KEY);
   }
+  syncThemeColorMeta();
 };
 
 export const initTheme = () => {
   const stored = getStoredTheme();
   if (stored) applyTheme(stored);
+  else syncThemeColorMeta();
 };
 
 export const toggleTheme = () => {

@@ -15,6 +15,15 @@ vi.mock('./components.js', async () => {
 import { mountGeneratorFlow } from './generator-flow.js';
 import { loadProfile } from '../domain/profile.js';
 
+const inputHasAccessibleLabel = (input, root) => {
+  const id = input.id;
+  if (id && root.querySelector(`label[for="${id}"]`)) return true;
+  if (input.getAttribute('aria-label')) return true;
+  const labelledBy = input.getAttribute('aria-labelledby');
+  if (labelledBy && root.querySelector(`[id="${labelledBy}"]`)) return true;
+  return false;
+};
+
 describe('generator-flow onboarding and 1-step local flow', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -33,16 +42,13 @@ describe('generator-flow onboarding and 1-step local flow', () => {
     const host = document.createElement('div');
     mountGeneratorFlow(host, { baseUrl: 'https://sepa.example.at' });
 
-    // 1. Starts on privacy step when no IBAN is stored locally
     expect(host.querySelector('[data-testid="step-privacy"]')).not.toBeNull();
     host.querySelector('.kit-primary-action').click();
 
-    // 2. Moves to IBAN setup step; save button disabled until valid IBAN entered
     expect(host.querySelector('[data-testid="step-iban"]')).not.toBeNull();
     const saveBtn = host.querySelector('.kit-primary-action');
     expect(saveBtn.disabled).toBe(true);
 
-    // Click Demo AT (George) pill -> enables save immediately
     const demoAtPill = [...host.querySelectorAll('.kit-pill')].find((b) =>
       b.textContent.includes('Demo AT')
     );
@@ -50,16 +56,15 @@ describe('generator-flow onboarding and 1-step local flow', () => {
     expect(saveBtn.disabled).toBe(false);
     saveBtn.click();
 
-    // 3. Saved only in localStorage, now on amount step
-    expect(loadProfile()?.iban).toBe('AT232011100234573201');
+    expect(loadProfile()?.name).toBe('Michael Plöckinger');
+    expect(loadProfile()?.iban).toBe('AT441900103783600211');
     expect(host.querySelector('[data-testid="step-amount"]')).not.toBeNull();
 
-    // 4. Enter amount -> generate link -> done!
-    const amountInput = host.querySelector('.kit-amount-input');
+    const amountInput = host.querySelector('#sepa-amount');
     amountInput.value = '25,50';
     amountInput.dispatchEvent(new Event('input'));
 
-    host.querySelector('.kit-primary-action').click();
+    host.querySelector('.kit-mobile-screen__footer .kit-primary-action').click();
     expect(host.querySelector('[data-testid="step-ready"]')).not.toBeNull();
 
     const waLink = host.querySelector('a.kit-primary-action');
@@ -85,5 +90,102 @@ describe('generator-flow onboarding and 1-step local flow', () => {
 
     expect(loadProfile()).toBeNull();
     expect(host.querySelector('[data-testid="step-privacy"]')).not.toBeNull();
+  });
+
+  it('keeps the name field focused and phone frame child when the mobile keyboard resizes the viewport', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    mountGeneratorFlow(host, { baseUrl: 'https://sepa.example.at' });
+    host.querySelector('.kit-primary-action').click();
+
+    const phoneFrame = host.querySelector('.kit-phone');
+    const frameChildBefore = phoneFrame.firstElementChild;
+
+    const name = host.querySelector('#sepa-payee-name');
+    name.focus();
+    name.value = 'Anna';
+    name.dispatchEvent(new Event('input', { bubbles: true }));
+    window.dispatchEvent(new Event('resize'));
+
+    expect(document.activeElement).toBe(name);
+    expect(name.value).toBe('Anna');
+    expect(host.querySelector('.kit-primary-action').disabled).toBe(true);
+    expect(phoneFrame.firstElementChild).toBe(frameChildBefore);
+    host.remove();
+  });
+
+  it('gives every flow input an accessible label', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    mountGeneratorFlow(host, { baseUrl: 'https://sepa.example.at' });
+    host.querySelector('.kit-primary-action').click();
+
+    let inputs = host.querySelectorAll('input');
+    inputs.forEach((input) => expect(inputHasAccessibleLabel(input, host)).toBe(true));
+
+    [...host.querySelectorAll('.kit-pill')].find((b) => b.textContent.includes('Demo AT')).click();
+    host.querySelector('.kit-primary-action').click();
+
+    expect(host.querySelector('[data-testid="step-amount"]')).not.toBeNull();
+
+    inputs = host.querySelectorAll('input');
+    inputs.forEach((input) => expect(inputHasAccessibleLabel(input, host)).toBe(true));
+    host.remove();
+  });
+
+  it('shows alert error and stays on amount step for invalid amount', () => {
+    localStorage.setItem(
+      'sepa_saved_profile',
+      JSON.stringify({ name: 'Anna', iban: 'AT232011100234573201', bic: '' })
+    );
+    const host = document.createElement('div');
+    mountGeneratorFlow(host, { baseUrl: 'https://sepa.example.at' });
+
+    const amountInput = host.querySelector('#sepa-amount');
+    amountInput.value = 'xyz';
+    amountInput.dispatchEvent(new Event('input'));
+
+    host.querySelector('.kit-mobile-screen__footer .kit-primary-action').click();
+
+    expect(host.querySelector('[data-testid="step-amount"]')).not.toBeNull();
+    const alert = host.querySelector('[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert.textContent.length).toBeGreaterThan(0);
+  });
+
+  it('does not render broken ready screen when setStep(ready) without a valid payment', () => {
+    const host = document.createElement('div');
+    const api = mountGeneratorFlow(host, { baseUrl: 'https://sepa.example.at' });
+    api.setStep('ready');
+
+    expect(host.querySelector('[data-testid="step-ready"]')).toBeNull();
+    const wa = host.querySelector('a.kit-primary-action--link');
+    if (wa) expect(wa.getAttribute('href')).not.toBe('#');
+  });
+
+  it('fires onStepChange once per step transition', () => {
+    const host = document.createElement('div');
+    const seen = [];
+    const api = mountGeneratorFlow(host, { baseUrl: 'https://sepa.example.at' }, {
+      onStepChange: (s) => seen.push(s),
+    });
+
+    expect(seen).toEqual(['privacy']);
+
+    host.querySelector('.kit-primary-action').click();
+    expect(seen).toEqual(['privacy', 'iban']);
+
+    [...host.querySelectorAll('.kit-pill')].find((b) => b.textContent.includes('Demo AT')).click();
+    host.querySelector('.kit-primary-action').click();
+    expect(seen).toEqual(['privacy', 'iban', 'amount']);
+
+    host.querySelector('#sepa-amount').value = '10,00';
+    host.querySelector('#sepa-amount').dispatchEvent(new Event('input'));
+    host.querySelector('.kit-mobile-screen__footer .kit-primary-action').click();
+    expect(seen).toEqual(['privacy', 'iban', 'amount', 'ready']);
+
+    api.setStep('amount');
+    expect(seen.filter((s) => s === 'amount').length).toBe(2);
+    expect(seen[seen.length - 1]).toBe('amount');
   });
 });

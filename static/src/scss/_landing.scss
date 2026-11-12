@@ -14,7 +14,7 @@
   gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--ui-border);
-  background: color-mix(in oklab, var(--ui-surface) 92%, transparent);
+  background: color-mix(in oklab, var(--ui-surface) 96%, transparent);
   backdrop-filter: blur(10px);
 }
 
@@ -78,6 +78,9 @@
   font-weight: 500;
   color: var(--ui-text-muted);
   text-decoration: none;
+  border-radius: var(--ui-radius-control);
+
+  @include focus-ring;
 
   &:hover {
     color: var(--ui-text);
@@ -93,9 +96,21 @@
 }
 
 .sepa-hero {
-  padding: 8px 16px 16px;
+  padding: 6px 16px 12px;
   max-width: 1200px;
   margin: 0 auto;
+
+  .kit-inline-error {
+    margin: 0 0 10px;
+  }
+}
+
+.sepa-hero-head {
+  margin-bottom: 8px;
+
+  @include desktop {
+    margin-bottom: 0;
+  }
 }
 
 .sepa-hero-mobile {
@@ -104,18 +119,11 @@
   }
 }
 
-.sepa-hero-mobile__title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
 .sepa-hero-mobile__pills {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .sepa-hero-mobile__pill {
@@ -127,9 +135,10 @@
 }
 
 .sepa-hero-kit {
-  margin-top: 12px;
+  margin-top: 8px;
 
   @include desktop {
+    margin-top: 12px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
     gap: 48px;
@@ -139,16 +148,12 @@
 }
 
 .sepa-hero-desktop__copy {
-  display: none;
-
-  @include desktop {
-    display: block;
-  }
+  display: block;
 }
 
 .sepa-hero-eyebrow {
+  display: none;
   margin: 0;
-  display: inline-block;
   padding: 4px 10px;
   border-radius: var(--ui-radius-pill);
   background: var(--ui-accent-soft);
@@ -156,28 +161,67 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
+
+  @include desktop {
+    display: inline-block;
+  }
 }
 
 .sepa-hero-title {
-  margin: 16px 0 0;
-  font-size: clamp(1.6rem, 3vw, 2.25rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  margin: 0;
+  font-size: clamp(1.125rem, 4.2vw, 1.25rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+
+  @supports (display: -webkit-box) {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @include desktop {
+    margin: 16px 0 0;
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+  }
 }
 
 .sepa-hero-lead {
+  display: none;
   margin: 12px 0 0;
   font-size: 16px;
   line-height: 1.5;
   color: var(--ui-text-muted);
   max-width: 52ch;
+
+  @include desktop {
+    display: block;
+  }
 }
 
 .sepa-trust-grid {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 20px;
+
+  @include desktop {
+    display: grid;
+  }
+}
+
+.sepa-hero-desktop__copy .kit-rail {
+  display: none;
+
+  @include desktop {
+    display: grid;
+  }
 }
 
 .sepa-trust-badge {
@@ -211,7 +255,7 @@
 }
 
 .sepa-hero-flow {
-  margin-top: 12px;
+  margin-top: 8px;
 
   @include desktop {
     margin-top: 0;
@@ -222,6 +266,7 @@
   max-width: 960px;
   margin: 0 auto;
   padding: 20px 16px;
+  scroll-margin-top: 72px;
 }
 
 .sepa-section__title {
@@ -253,82 +298,6 @@
   background: var(--ui-surface);
 }
 
-.sepa-fragment-card {
-  margin-top: 24px;
-  padding: 16px;
-  border-radius: var(--ui-radius-card);
-  border: 1px solid var(--ui-border);
-  background: var(--ui-surface);
-}
-
-.sepa-fragment-card__title {
-  margin: 0 0 8px;
-  font-size: 1.1rem;
-}
-
-.sepa-fragment-card__url {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  word-break: break-word;
-}
-
-.sepa-fragment-card__hash {
-  font-family: var(--ui-font-mono);
-  color: var(--ui-accent-text);
-}
-
-.sepa-fragment-card__quiet {
-  color: var(--ui-text-muted);
-}
-
-.sepa-security-labels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.sepa-security-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: var(--ui-radius-pill);
-  background: var(--ui-subtle);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.sepa-timeline-row {
-  display: grid;
-  gap: 24px;
-  margin-top: 24px;
-
-  @include desktop {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.sepa-bank-grid {
-  display: grid;
-  gap: 24px;
-
-  @include tablet-up {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.sepa-bank-col__title {
-  margin: 0 0 8px;
-}
-
-.sepa-bank-col__list {
-  margin: 0;
-  padding-left: 1.1rem;
-  color: var(--ui-text-muted);
-}
-
 .sepa-faq-item {
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-card);
@@ -340,12 +309,41 @@
 .sepa-faq-item__q {
   cursor: pointer;
   font-weight: 600;
+  border-radius: var(--ui-radius-control);
+
+  @include focus-ring;
 }
 
 .sepa-faq-item__a {
   margin: 8px 0 0;
   color: var(--ui-text-muted);
   font-size: 14px;
+}
+
+.sepa-jump-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  margin-bottom: 12px;
+
+  @include desktop {
+    display: none;
+  }
+}
+
+.sepa-jump-links__link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ui-text-muted);
+  text-decoration: none;
+  border-radius: var(--ui-radius-control);
+
+  @include focus-ring;
+
+  &:hover {
+    color: var(--ui-text);
+  }
 }
 
 .sepa-landing-footer {

@@ -123,6 +123,12 @@ test('BankDirectory BAWAG', function () use ($banks): void {
     assertSame('bawag_at', $r['appKey']);
 });
 
+test('BankDirectory Trade Republic AT', function () use ($banks): void {
+    $r = $banks->resolveFromIban('AT441900103783600211');
+    assertSame('Trade Republic', $r['bankName']);
+    assertSame('TRBKATW2XXX', $r['defaultBic']);
+});
+
 test('BankDirectory Sparkasse DE', function () use ($banks): void {
     $r = $banks->resolveFromIban('DE54100500000011111111');
     assertSame('sparkasse_de', $r['appKey']);
