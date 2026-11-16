@@ -221,15 +221,23 @@ export const mountLandingView = (root, state) => {
   const jumpNav = el('nav', 'sepa-jump-links', { 'aria-label': 'Schnellnavigation' });
   [
     ['#so-funktionierts', "So geht's"],
-    ['#sicherheit', 'Datenschutz'],
+    ['#sicherheit', 'Datenschutz-Prinzip'],
     ['#banken', 'Banken'],
   ].forEach(([href, label]) => {
     jumpNav.appendChild(el('a', 'sepa-jump-links__link', { href, text: label }));
   });
+  const legalNav = el('nav', 'sepa-legal-footer-nav', { 'aria-label': 'Rechtliches' });
+  [
+    ['/impressum', 'Impressum'],
+    ['/datenschutz', 'Datenschutzerklärung'],
+  ].forEach(([href, label]) => {
+    legalNav.appendChild(el('a', 'sepa-legal-footer-nav__link', { href, text: label }));
+  });
   foot.append(
     jumpNav,
+    legalNav,
     el('p', '', {
-      text: 'Keine Cookies · nichts am Server',
+      text: 'MPI GmbH · Keine Cookies · nichts am Server',
     })
   );
   page.appendChild(foot);

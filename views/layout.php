@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 $mode = (string) ($state['mode'] ?? 'generator');
 $payment = $state['payment'] ?? null;
+$basePrefix = isset($basePrefix) ? (string) $basePrefix : '';
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -55,7 +56,9 @@ $payment = $state['payment'] ?? null;
 </head>
 <body>
     <div id="app" class="sepa-shell">
-<?php if ($mode === 'payment' && is_array($payment)): ?>
+<?php if ($mode === 'impressum' || $mode === 'datenschutz'): ?>
+<?php $legalPage = $mode; require __DIR__ . '/legal.php'; ?>
+<?php elseif ($mode === 'payment' && is_array($payment)): ?>
         <article class="sepa-fallback">
             <h1>SEPA-Überweisung</h1>
             <dl>
@@ -81,12 +84,13 @@ $payment = $state['payment'] ?? null;
                 <dt>Banking-App öffnen</dt>
                 <dd><a href="<?= htmlspecialchars((string) $payment['paytoUri'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $payment['paytoUri'], ENT_QUOTES, 'UTF-8') ?></a></dd>
             </dl>
+            <p><a href="<?= htmlspecialchars($basePrefix . '/impressum', ENT_QUOTES, 'UTF-8') ?>">Impressum</a> · <a href="<?= htmlspecialchars($basePrefix . '/datenschutz', ENT_QUOTES, 'UTF-8') ?>">Datenschutzerklärung</a></p>
         </article>
 <?php elseif ($mode === 'payment' && ($state['error'] ?? null) !== null): ?>
         <article class="sepa-fallback">
             <h1>Ungültiger Zahlungslink</h1>
             <p class="error"><?= htmlspecialchars((string) $state['error'], ENT_QUOTES, 'UTF-8') ?></p>
-            <p><a href="/">Eigenen SEPA-Link erstellen</a></p>
+            <p><a href="<?= htmlspecialchars($basePrefix . '/', ENT_QUOTES, 'UTF-8') ?>">Eigenen SEPA-Link erstellen</a> · <a href="<?= htmlspecialchars($basePrefix . '/impressum', ENT_QUOTES, 'UTF-8') ?>">Impressum</a> · <a href="<?= htmlspecialchars($basePrefix . '/datenschutz', ENT_QUOTES, 'UTF-8') ?>">Datenschutzerklärung</a></p>
         </article>
 <?php else: ?>
         <article class="sepa-fallback">
@@ -96,6 +100,7 @@ $payment = $state['payment'] ?? null;
                 <li>IBAN bleibt lokal auf deinem Gerät</li>
                 <li>Kompatibel mit George, Mein ELBA, Sparkasse &amp; VR Banking</li>
             </ul>
+            <p><a href="<?= htmlspecialchars($basePrefix . '/impressum', ENT_QUOTES, 'UTF-8') ?>">Impressum</a> · <a href="<?= htmlspecialchars($basePrefix . '/datenschutz', ENT_QUOTES, 'UTF-8') ?>">Datenschutzerklärung</a></p>
         </article>
 <?php endif; ?>
     </div>

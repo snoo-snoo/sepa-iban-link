@@ -71,6 +71,8 @@ KAS **Zielverzeichnis**: `…/public/` (nicht das Repo-Root).
 | Methode | Pfad | Beschreibung |
 |---------|------|--------------|
 | `GET` | `/` | Generator, lokales Onboarding, Hydration via `#p=…` |
+| `GET` | `/impressum` | Impressum & Offenlegung gem. ECG / UGB / MedienG (MPI GmbH) |
+| `GET` | `/datenschutz` | DSGVO-Datenschutzerklärung (Zero-Data-Storage, `#p=…`, `localStorage`) |
 | `GET` | `/p/{token}` | Legacy-Zahlungsseite (nur Lesen) |
 | `POST` | `/api/encode` | **410 Gone** — Zero-Data-Storage (keine Kodierung am Server) |
 | `GET` | `/og/default.(png\|svg)` | DSGVO-Standard-OpenGraph-Karte (WhatsApp `GET /`) |
